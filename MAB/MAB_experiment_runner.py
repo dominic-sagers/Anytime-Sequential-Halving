@@ -58,7 +58,8 @@ class MAB_Experiment_runner:
         start_time = int(round(time.time() * 1000)) 
         while int(round(time.time() * 1000)) - start_time < time_budget_ms:
             arm = algo.choose_arm()
-
+            arm_means_idx = int(arm_means_idx)
+            #print("arm: ", arm)
             reward = norm.rvs(loc=self.arm_means[arm_means_idx,:][arm], scale=1.0)
 
             algo.observe_reward(arm, reward)
@@ -279,10 +280,10 @@ class MAB_Experiment_runner:
 2. Chosen arm true mean reward over different iteration/time budgets (regret: true mean best arm - true mean chosen arm)
 """   
 if __name__ == "__main__":
-    csv1it = pd.read_csv("iteration_regret_edit_distance.csv")
-    csv1time = pd.read_csv("time_regret_edit_distance.csv")
-    csv2it = pd.read_csv("iteration_regret_edit_distance1.csv")
-    csv2time = pd.read_csv("time_regret_edit_distance1.csv")
+    # csv1it = pd.read_csv("iteration_regret_edit_distance.csv")
+    # csv1time = pd.read_csv("time_regret_edit_distance.csv")
+    # csv2it = pd.read_csv("iteration_regret_edit_distance1.csv")
+    # csv2time = pd.read_csv("time_regret_edit_distance1.csv")
 
     # plt.figure(figsize=(10, 10))
 
@@ -434,13 +435,13 @@ if __name__ == "__main__":
     time_budget_ms = 10
     
     mab_exp_runner = MAB_Experiment_runner(num_arms, means_amt)
-    mab_exp_runner.run_regret_and_edit_distance_experiment(algo_type="iteration", iterations=iterations)
+    # mab_exp_runner.run_regret_and_edit_distance_experiment(algo_type="iteration", iterations=iterations)
     # mab_exp_runner.run_regret_and_edit_distance_experiment(algo_type="time", time_budget_ms=10000)
     # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="iteration", iteration_range=[100,500,1000,5000,10000])
-   
-    # time_range = range(5000,30000,5000)
-    # histories = mab_exp_runner.run_time_budget_range_experiment(time_range, arm_means_idx)
-    # mab_exp_runner.plot_time_range_experiment(histories, arm_means_idx, time_range)
+    print(mab_exp_runner.arm_means[arm_means_idx, :])
+    time_range = range(1000,3000,1000)
+    histories = mab_exp_runner.run_time_budget_range_experiment(time_range, arm_means_idx)
+    mab_exp_runner.plot_time_range_experiment(histories, arm_means_idx, time_range)
     
     # history = mab_exp_runner.run_sh_base_experiment(iterations, arm_means_idx)
     # mab_exp_runner.plot_sh_experiment(history, iterations=iterations,type="baseline")
