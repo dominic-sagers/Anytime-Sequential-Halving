@@ -2,7 +2,7 @@ import math
 import time
 import numpy as np
 
-np.random.seed(2079)    # fix seed to make everything below reproducible
+#np.random.seed(2079)    # fix seed to make everything below reproducible
 arms = 10      # number of arms per MAB problem
 num_mab_problems = 200
 #iteration_budget = 1000
@@ -226,8 +226,13 @@ class SequentialHalvingAlgTime_v1:
     if self.current_time - self.prev_switch_time >= self.round_time:
       
       # Pair each arm with its corresponding reward, sort the pairs, and extract the arms
+      # print("*************************")
+      # print("before sorting: ", self.current_arms)
       self.current_arms = self.sort_arms(self.current_arms)
+      # print("after sorting: ", self.current_arms)
       self.current_arms = self.halve_arms(self.current_arms)
+      # print("after halving: ", self.current_arms)
+      # print("*************************\n\n")
       self.considered_arms_amt = len(self.current_arms)
       # self.round_time = math.ceil(self.round_time/self.phases)
       
@@ -294,13 +299,16 @@ class SequentialHalvingAlgTime_v1:
     self.total_rewards.update({arm: self.total_rewards.get(arm) + reward})
     
     #self.total_means[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)]/self.visits[self.current_arms.index(arm)]
-    new_mean = self.total_means.get(arm)/self.visits.get(arm)
-    self.total_means.update({arm:new_mean})
+
+    
     
     # self.current_rewards[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)]/self.visits[self.current_arms.index(arm)]
     cur_rew = self.total_rewards.get(arm)/self.visits.get(arm)
+    
+    
     self.current_rewards.update({arm: cur_rew})
     self.current_arms.update({arm: self.total_rewards.get(arm)/self.visits.get(arm)})
+    self.total_means.update({arm: self.total_rewards.get(arm)/self.visits.get(arm)})
     
     #print(self.current_rewards)
 #     self.visits[self.current_arms.index(arm)] = self.visits[self.current_arms.index(arm)] + 1
