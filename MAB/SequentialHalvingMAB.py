@@ -18,21 +18,29 @@ class SequentialHalvingAlg:
   """
   
   def __init__(self,return_hist=False, k=10, time_steps_per_problem=1000):
-      self.current_arms = range(k) #A list of all arms that the algorithm cares about. Will be sequentially halved ;)
-      self.current_arm = self.current_arms[0] #Keeping track of the current arm to pull
-      self.current_rewards = [0] * k #The rewards that the algorithm has observed for each arm
-      self.visits = [0] * k #The amount of times that the algorithm has pulled each arm
-      self.total_rewards = [0] * k #The total rewards that the algorithm has observed for each arm
-      self.total_means = [0] * k #The total rewards that the algorithm has observed for each arm
+      self.original_indices = {index: 0 for index, arm in enumerate(range(k))}  # Map arm to its original index
+      self.current_arms = {index: 0 for index, arm in enumerate(range(k))}
+      self.current_arm = self.current_arms.get(0) #Keeping track of the current arm to pull
+      self.current_rewards = {index: 0 for index, arm in enumerate(range(k))}  # Map arm to its original index
+      self.visits = {index: 0 for index, arm in enumerate(range(k))}  #The amount of times that the algorithm has pulled each arm
+      self.total_rewards =  {index: 0 for index, arm in enumerate(range(k))}  #The total rewards that the algorithm has observed for each arm
+
+      self.considered_arms_amt = k #The amount of arms that the algorithm is currently considering
+      self.total_means = {index: 0 for index, arm in enumerate(range(k))} #The total rewards that the algorithm has observed for each arm
       self.considered_arms_amt = k #The amount of arms that the algorithm is currently considering
       self.time_steps_per_problem = time_steps_per_problem 
       self.sample_count_per_arm = self.get_dist_per_arm(k) #Amount of times by which each arm should be sampled (as per Karnin et al algorithm).
       self.current_iteration = 0 
+      
       self.budget_left = time_steps_per_problem
       self.current_round = 1
       self.return_hist = return_hist
       self.hist = [] #Stores history of arms pulled
       self.k = k
+      self.current_arm_idx = 0
+      
+      self.phases = math.ceil(math.log2(k))
+      self.round_time = time_steps_per_problem/self.phases
       
 
 
@@ -45,7 +53,7 @@ class SequentialHalvingAlg:
   
   def reset(self) -> None:
     self.current_arms = range(self.k)
-    self.current_arm = self.current_arms[0]
+    self.current_arm = self.current_arms.get(0) #Keeping track of the current arm to pull
     self.current_rewards = [0] * self.k
     self.visits = [0] * self.k 
     self.total_rewards = [0] * self.k 
@@ -56,56 +64,88 @@ class SequentialHalvingAlg:
     self.hist = [] #Stores history of arms pulled
     self.budget_left = self.time_steps_per_problem
   
-
+  def sort_arms(self, arms):
+      # Pair each arm with its corresponding reward, sort the pairs, and extract the arms
+        # self.current_arms, self.current_rewards = zip(*sorted(zip(self.current_arms, self.current_rewards), key=lambda x: x[1], reverse=True))
+        # self.current_arms = list(self.current_arms)
+        # self.current_rewards = list(self.current_rewards)
+      sorted_dict = dict(sorted(arms.items(), key=lambda item: item[1], reverse=True))
+      return sorted_dict
+    
+  def halve_arms(self, arms):
+      #print('here')
+      new_dict = {}
+      keys = list(arms.keys())
+      #print('len keys: ', len(keys))
+      #print('considered arms amount: ', self.considered_arms_amt)
+      # print('Amount after halving: ', (math.ceil(len(keys) / (self.considered_arms_amt/2))))
+      #ran = math.ceil(len(keys) / (self.considered_arms_amt/2))
+      ran = math.ceil(len(keys)/2)
+      #print('Amount after halving: ', ran)
+      for i in range(ran):
+          new_dict[keys[i]] = arms[keys[i]]
+      return new_dict
+  
+    
+  
   def choose_arm(self) -> int:
     #print(f"current_arm: {self.current_arm} current index: {self.current_arms.index(self.current_arm)} current_iteration: {self.current_iteration} considered_arms_amt: {self.considered_arms_amt} current_round: {self.current_round} budget_left: {self.budget_left} sample_count_per_arm: {self.sample_count_per_arm} arms left: {len(self.current_arms)}")
     if(self.considered_arms_amt < 1): return self.current_arm
     
     
-    if self.current_iteration == self.sample_count_per_arm:
+    if self.current_iteration == self.round_time:
       self.current_iteration = 0
       
       
       #Check to see if we have used every arm the amount of times we should have
-      if self.current_arms.index(self.current_arm) + 1 == self.considered_arms_amt:
-        #If we have, we halve the amount of considered arms based on rewards and reset the current arm to the first arm in the list
-        
+
+      #If we have, we halve the amount of considered arms based on rewards and reset the current arm to the first arm in the list
+      
+      # # Pair each arm with its corresponding reward, sort the pairs, and extract the arms
+      
+      self.budget_left = self.budget_left/2 
         # Pair each arm with its corresponding reward, sort the pairs, and extract the arms
-        self.current_arms, self.current_rewards = zip(*sorted(zip(self.current_arms, self.current_rewards), key=lambda x: x[1], reverse=True))
-        self.current_arms = list(self.current_arms)
-        self.current_rewards = list(self.current_rewards)
-        
-        
-        self.current_arms = self.current_arms[:math.ceil(self.considered_arms_amt/2)] #Take top half of the list
-        self.current_rewards = self.current_rewards[:math.ceil(self.considered_arms_amt/2)]
-        self.considered_arms_amt = len(self.current_arms)
-        # self.considered_arms_amt = math.ceil(self.considered_arms_amt/2)
-        self.current_round = self.current_round + 1
-        
-        self.budget_left = self.budget_left/2 #FIXME: Is this correct or should it be rounded up before use in the halving method?
+      # print("*************************")
+      # print("before sorting: ", self.current_arms)
+      self.current_arms = self.sort_arms(self.current_arms)
+      # print("after sorting: ", self.current_arms)
+      self.current_arms = self.halve_arms(self.current_arms)
+      # print("after halving: ", self.current_arms)
+      # print("*************************\n\n")
+      self.considered_arms_amt = len(self.current_arms)
         
         # budget_left = self.budget_left
-        if self.considered_arms_amt == 1:
-          self.sample_count_per_arm = self.budget_left
-        else:
-          self.sample_count_per_arm = self.get_dist_per_arm(self.considered_arms_amt)
-          
-        self.current_arm = self.current_arms[0]
+      if self.considered_arms_amt == 1:
+        self.sample_count_per_arm = self.budget_left
+      else:
+        self.sample_count_per_arm = self.get_dist_per_arm(self.considered_arms_amt)
         
-        if self.return_hist: self.hist.append(self.current_arm)
-        
-        return self.current_arm
+      self.current_arm_idx = 0
       
-     
-      self.current_arm = self.current_arms[self.current_arms.index(self.current_arm)+1]
+      if len(self.current_arms) > 1: self.current_arm_idx = self.current_arm_idx + 1
+        
+      self.current_arm = list(self.current_arms.keys())[0]
+      self.current_arm_idx = 0
       
       if self.return_hist: self.hist.append(self.current_arm)
+      
       return self.current_arm
+    
+    
+    
+    if self.current_arm_idx == len(self.current_arms) - 1:
+      self.current_arm_idx = 0
     else:
-      self.current_iteration = self.current_iteration + 1
-      if self.return_hist: self.hist.append(self.current_arm)
-      return self.current_arm
-
+      self.current_arm_idx = self.current_arm_idx + 1
+    
+    self.current_arm =  list(self.current_arms.keys())[self.current_arm_idx] 
+      
+      
+    if self.return_hist: self.hist.append(self.current_arm)
+    self.current_iteration = self.current_iteration + 1
+    return self.current_arm
+  
+  
   def observe_reward(self, arm: int, reward: float) -> None:
     """
     This function lets us observe rewards from arms we have selected.
@@ -114,10 +154,22 @@ class SequentialHalvingAlg:
     :param reward: The reward we received.
     
     """
-    self.visits[self.current_arms.index(arm)] = self.visits[self.current_arms.index(arm)] + 1
-    self.total_rewards[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)] + reward
-    self.total_means[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)]/self.visits[self.current_arms.index(arm)]
-    self.current_rewards[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)]/self.visits[self.current_arms.index(arm)]
+    
+    vis = self.visits.get(arm)+1
+    self.visits.update({arm: vis})
+    rew = self.total_rewards.get(arm) + reward
+    self.total_rewards.update({arm: self.total_rewards.get(arm) + reward})
+    cur_rew = self.total_rewards.get(arm)/self.visits.get(arm)
+    self.current_rewards.update({arm: cur_rew})
+    self.current_arms.update({arm: self.total_rewards.get(arm)/self.visits.get(arm)})
+    self.total_means.update({arm: self.total_rewards.get(arm)/self.visits.get(arm)})
+    
+    
+    
+    # self.visits[self.current_arms.index(arm)] = self.visits[self.current_arms.index(arm)] + 1
+    # self.total_rewards[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)] + reward
+    # self.total_means[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)]/self.visits[self.current_arms.index(arm)]
+    # self.current_rewards[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)]/self.visits[self.current_arms.index(arm)]
     
     
 
