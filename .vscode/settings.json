@@ -1,0 +1,6 @@
+{
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "Ludii/Ludii-1.3.12.jar"
+    ]
+}
