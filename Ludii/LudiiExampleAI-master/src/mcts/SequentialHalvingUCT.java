@@ -168,33 +168,60 @@ public class SequentialHalvingUCT extends AI
         {
         	final Node child = rootNode.children.get(i);
         	final double exploit = child.scoreSums[mover] / child.visitCount;
-        	final double explore = Math.sqrt(twoParentLog / child.visitCount);
-            final double ucb1Value = exploit + explore;
+        	// final double explore = Math.sqrt(twoParentLog / child.visitCount);
+            // final double ucb1Value = exploit + explore;
 			
 			ArrayList<Double> val = new ArrayList<>();
 
 			val.add((double) i);
-			val.add(ucb1Value);
+			val.add(exploit);
 			nodeValues.add(val);
             
         }
 
 
-		//sort based on the second index of each inner list:
+		//sort descending based on the second index of each inner list:
 		nodeValues.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(1)).reversed());
 
 		//make a new list which only contains the nodes we want to remove from the tree:
-		int halfSize = nodeValues.size() / 2;
+		double halfSizeTemp = Math.ceil(nodeValues.size() / 2);
+		int halfSize = Double.valueOf(halfSizeTemp).intValue();
 		ArrayList<ArrayList<Double>> lowerHalf = new ArrayList<>(nodeValues.subList(halfSize, nodeValues.size()));
 
-		//Remove nodes from root based on this new list
-		for(ArrayList<Double> node : lowerHalf){
-			int intIndex = Double.valueOf(node.get(0)).intValue();
-			rootNode.children.remove(intIndex);
+		lowerHalf.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(0)).reversed());//sort based on index in descending order
+
+		//Remove the worst nodes from the list, by sorting first, this index based removal should happen in a way that doesn't break./
+		for(int i = 0; i < lowerHalf.size();i++){
+			rootNode.children.remove(Double.valueOf(lowerHalf.get(i).get(0)).intValue());
 		}
+
+		//Keeplist method:
+
+		// List<Node> keepList = new ArrayList<Node>();
+		// int[] lowerIndexes = new int[lowerHalf.size()];
+
+		// for(int i = 0;i<lowerHalf.size();i++){
+		// 	lowerIndexes[i] = Double.valueOf(lowerHalf.get(i).get(0)).intValue();
+		// }
 		
-		//Done??
-		//TODO: Get dennis to look at this bc I think im insane
+		// //Keep the nodes that are not in lowerHalf list
+		// for(int i = 0; i < rootNode.children.size(); i++){
+		// 	boolean canAdd = true;
+		// 	for(int j = 0; j < lowerIndexes.length; j++){
+		// 		if(lowerIndexes[j] == i){
+		// 			canAdd = false;
+		// 		}
+		// 	}
+
+		// 	if(canAdd){
+		// 		keepList.add(rootNode.children.get(i));
+		// 	}
+		// }
+		
+
+		//Replace the rootNode children list with keeplist
+		// rootNode.children = keepList;
+		
 
 	}
 	
@@ -345,7 +372,7 @@ public class SequentialHalvingUCT extends AI
 		private final double[] scoreSums;
 		
 		/** Child nodes */
-		private final List<Node> children = new ArrayList<Node>();
+		private List<Node> children = new ArrayList<Node>();
 		
 		/** List of moves for which we did not yet create a child node */
 		private final FastArrayList<Move> unexpandedMoves;
