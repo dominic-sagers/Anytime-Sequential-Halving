@@ -37,7 +37,7 @@
     "drawCornerConvexCells": false,
     "Show Track Track1B": false,
     "LoadedFromMemory": true,
-    "SearchTime_2": 1,
+    "SearchTime_2": 3,
     "CursorTooltip": false,
     "drawOuterCells": false,
     "NoRepetition": false,
@@ -54,15 +54,12 @@
     "drawBottomVertices": false,
     "drawBottomCells": false,
     "ShowFaceCoordinates": false,
+    "RecentGames_2": "1D Chess",
+    "RecentGames_1": "Chess",
     "FrameWidth": 1440,
     "drawSlashEdges": false,
     "drawCornersCells": false,
-    "OptionStrings": [
-        "Corners Capture/False",
-        "Slide/To Capture",
-        "End Rules/No Piece",
-        "Version/Official"
-    ],
+    "OptionStrings": [],
     "drawLeftEdges": false,
     "drawAngledEdges": false,
     "RecentGames_0": "Surakarta",
@@ -132,7 +129,7 @@
     "Show Track Track2B": false,
     "AI_2": {
         "AI": {"algorithm": "Sequential Halving UCT"},
-        "constructor": "main.LaunchLudii$$Lambda$35/0x0000000800c02c30@74a726ad"
+        "constructor": "main.LaunchLudii$$Lambda/0x000001e381002c30@64bdc890"
     },
     "ShowLastMove": false,
     "NoRepetitionWithinTurn": false,
@@ -152,9 +149,9 @@
     "tabFontSize": 13,
     "ShowCellIndices": false,
     "drawPerimeterEdges": false,
-    "FrameLocX": 323,
+    "FrameLocX": 241,
     "AnimationVisualsType": "None",
-    "FrameLocY": 96,
+    "FrameLocY": 11,
     "networkRefresh": false,
     "editorParseText": true,
     "TickLength": 0.1,

@@ -2,6 +2,7 @@ package mcts;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import game.Game;
@@ -31,19 +32,18 @@ public class SequentialHalvingUCT extends AI
 	
 	//-------------------------------------------------------------------------
 	//Necessary variables for the SH algorithm.
+	private final int iterationBudgetMultiplier = 1000;
 	private int iterationBudget;
-	private final int rounds;// A reference for the amount of rounds 
-	private final int iterPerRound;//Gives how many iterations should be run before halving from the root.
+	private int rounds;// A reference for the amount of rounds 
+	private int iterPerRound;//Gives how many iterations should be run before halving from the root.
 	private int halvingIterations;
+	private int numIterations;
 	/**
 	 * Constructor
 	 */
 	public SequentialHalvingUCT()
 	{
 		this.friendlyName = "Sequential Halving UCT";
-		this.rounds = (int) Math.ceil(Math.log(iterationBudget));
-		this.iterPerRound = (int) Math.ceil(iterationBudget/this.rounds);
-		
 	}
 	
 	//-------------------------------------------------------------------------
@@ -67,8 +67,13 @@ public class SequentialHalvingUCT extends AI
 		final long stopTime = (maxSeconds > 0.0) ? System.currentTimeMillis() + (long) (maxSeconds * 1000L) : Long.MAX_VALUE;
 		final int maxIts = (maxIterations >= 0) ? maxIterations : Integer.MAX_VALUE;
 		
-		int numIterations = 0;
-		int halvingIterations = 0;
+		this.iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
+		this.rounds = (int) Math.ceil(Math.log(iterationBudget));
+		this.iterPerRound = (int) Math.ceil(iterationBudget/2);
+		this.numIterations = 0;
+		this.halvingIterations = 0;
+
+		//ALGORITHM IDEA
 		/*while(numIterations < iterationBudget){
 			* while(halvingIterations < iterPerRound):
 			* 		while(true){
@@ -91,31 +96,33 @@ public class SequentialHalvingUCT extends AI
 
 
 		// Our main loop through MCTS iterations
+		ArrayList<Integer> hist = new ArrayList<>();
 		boolean rootFullyExpanded = false;
+		boolean firstRound = true;
 		int numPossibleMoves = root.unexpandedMoves.size();
 		System.err.println("possible moves: " + numPossibleMoves);
 		int rootNodesVisited = 0;
 
-		System.out.println("Maxits: " + maxIts + " \n numIterations: " + numIterations);
+		System.out.println("iterationBudget: " + this.iterationBudget + " \n numIterations: " + this.numIterations);
+		System.out.println("Iter per round: " + this.iterPerRound);
 		//System.currentTimeMillis() < stopTime && 
 		while 
 		(
-			numIterations < maxIts && 					// Respect iteration limit
+			this.numIterations < (this.iterationBudget) && 					// Respect iteration limit
 				// Respect time limit
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
 		{
-		boolean firstRound = true;
 
 		// Start in root node
 		if(!rootFullyExpanded){
+			//System.out.println("starting root search");
+			//System.out.println(rootNodesVisited);
 
-			while(halvingIterations < this.iterPerRound){//checks to see if we are ready to halve from the root
-
-				Node current = root;
-				
-				// Traverse tree
-				while (true)
+			Node current = root;
+			
+			// Traverse tree
+			while (true)
 			{
 				if (current.context.trial().over())
 				{
@@ -167,21 +174,23 @@ public class SequentialHalvingUCT extends AI
 			
 			rootNodesVisited++;
 			if(rootNodesVisited == numPossibleMoves){
-				System.out.println("First round over");
-				rootFullyExpanded = true;
+				//System.out.println("First round over");
 				firstRound = true;
+				rootFullyExpanded = true;
 			}
 
-
-		}
-
 		}else{
-
+			//Exploring nodes still in List
 				int nodeIndex = 0;
 				Node currentChild = root.children.get(nodeIndex); 
-				System.out.println("running UCT on node: " + nodeIndex);
-				while(halvingIterations < this.iterPerRound){//checks to see if we are ready to halve from the root
-					if(firstRound && halvingIterations == 0){halvingIterations = 1;}
+				
+				
+				while(this.halvingIterations < this.iterPerRound){//checks to see if we are ready to halve from the root
+					//System.out.println("running UCT on node: " + nodeIndex);
+					//System.out.println(this.halvingIterations);
+					//out.println(this.iterPerRound);
+
+					if(firstRound && this.halvingIterations == 0){this.halvingIterations += 1;}
 					
 
 						Node current = currentChild;
@@ -238,71 +247,86 @@ public class SequentialHalvingUCT extends AI
 					}
 					
 					// Increment iteration counts
-					++numIterations;
-					++this.halvingIterations;
+
+					hist.add(nodeIndex);
+					this.numIterations += 1;
+					this.halvingIterations += 1;
+					if(nodeIndex + 1 >= numPossibleMoves){
+						nodeIndex = 0;
+					}else{
+						nodeIndex++;
+						currentChild = root.children.get(nodeIndex);
+					}
 
 
 				}
-
-			nodeIndex++;
-			halvingIterations = 0;
-			if(nodeIndex >= root.children.size()){
-				System.out.println("Halving root");
-				halveRoot(root);
-				firstRound = false;
-				nodeIndex = 0;
-			}
+			
+		//After children have been explored equally, we halve from the root.
+			this.halvingIterations = 0;
+			//System.out.println("Halving root");
+			//System.out.println("numIterations: " + this.numIterations);
+			halveRoot(root);
+			numPossibleMoves = root.children.size();
+			this.iterPerRound = Double.valueOf(Math.ceil(this.iterPerRound / 2)).intValue();
+			if(this.iterPerRound <=0){ this.iterPerRound = 2;}
+			//System.out.println("iterperround after halving: " + this.iterPerRound);
+			firstRound = false;
 		}
-
 		}
 
 		
 		// Return the move we wish to play
+		System.out.println("VisitCounts\n______________");
+		displayHist(hist);
+		System.out.println("______________");
 		return finalMoveSelection(root);
 	}
 
 	public static void halveRoot(Node rootNode){
 		int numChildren = rootNode.children.size();
-		final int mover = rootNode.context.state().mover();
-		double bestValue = Double.NEGATIVE_INFINITY;
-		final double twoParentLog = 2.0 * Math.log(Math.max(1, rootNode.visitCount));
-		//Make a list sorting each child node by value and then take the best half.
+		if(numChildren > 2){
+			final int mover = rootNode.context.state().mover();
+			double bestValue = Double.NEGATIVE_INFINITY;
+			final double twoParentLog = 2.0 * Math.log(Math.max(1, rootNode.visitCount));
+			//Make a list sorting each child node by value and then take the best half.
 
-		// A list of lists where the first index of the inner list is the node 
-		//index and the second index is the value of that node
-		ArrayList<ArrayList<Double>> nodeValues = new ArrayList<>();
-		
-		for (int i = 0; i < numChildren; ++i) 
-        {
-        	final Node child = rootNode.children.get(i);
-        	final double exploit = child.scoreSums[mover] / child.visitCount;
-        	// final double explore = Math.sqrt(twoParentLog / child.visitCount);
-            // final double ucb1Value = exploit + explore;
+			// A list of lists where the first index of the inner list is the node 
+			//index and the second index is the value of that node
+			ArrayList<ArrayList<Double>> nodeValues = new ArrayList<>();
 			
-			ArrayList<Double> val = new ArrayList<>();
+			for (int i = 0; i < numChildren; ++i) 
+			{
+				final Node child = rootNode.children.get(i);
+				final double exploit = child.scoreSums[mover] / child.visitCount;
+				// final double explore = Math.sqrt(twoParentLog / child.visitCount);
+				// final double ucb1Value = exploit + explore;
+				
+				ArrayList<Double> val = new ArrayList<>();
 
-			val.add((double) i);
-			val.add(exploit);
-			nodeValues.add(val);
-            
-        }
+				val.add((double) i);
+				val.add(exploit);
+				nodeValues.add(val);
+				
+			}
 
 
-		//sort descending based on the second index of each inner list:
-		nodeValues.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(1)).reversed());
+			//sort descending based on the second index of each inner list:
+			nodeValues.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(1)).reversed());
 
-		//make a new list which only contains the nodes we want to remove from the tree:
-		double halfSizeTemp = Math.ceil(nodeValues.size() / 2);
-		int halfSize = Double.valueOf(halfSizeTemp).intValue();
-		ArrayList<ArrayList<Double>> lowerHalf = new ArrayList<>(nodeValues.subList(halfSize, nodeValues.size()));
+			//System.out.println("nodeValues after sorting descending: " + nodeValues.toString());
 
-		lowerHalf.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(0)).reversed());//sort based on index in descending order
+			//make a new list which only contains the nodes we want to remove from the tree:
+			double halfSizeTemp = Math.ceil(nodeValues.size() / 2);
+			int halfSize = Double.valueOf(halfSizeTemp).intValue();
+			ArrayList<ArrayList<Double>> lowerHalf = new ArrayList<>(nodeValues.subList(halfSize, nodeValues.size()));
 
-		//Remove the worst nodes from the list, by sorting first, this index based removal should happen in a way that doesn't break./
-		for(int i = 0; i < lowerHalf.size();i++){
-			rootNode.children.remove(Double.valueOf(lowerHalf.get(i).get(0)).intValue());
+			lowerHalf.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(0)).reversed());//sort based on index in descending order
+			//System.out.println("Worst nodes, sorted ascending: " + lowerHalf.toString());
+			//Remove the worst nodes from the list, by sorting first, this index based removal should happen in a way that doesn't break./
+			for(int i = 0; i < lowerHalf.size();i++){
+				rootNode.children.remove(Double.valueOf(lowerHalf.get(i).get(0)).intValue());
+			}
 		}
-
 		//Keeplist method:
 
 		// List<Node> keepList = new ArrayList<Node>();
@@ -331,6 +355,20 @@ public class SequentialHalvingUCT extends AI
 		// rootNode.children = keepList;
 		
 
+	}
+
+	public static void displayHist(ArrayList<Integer> hist){
+		 
+		 // Count occurrences of each integer
+		 HashMap<Integer, Integer> counts = new HashMap<>();
+		 for (Integer num : hist) {
+			 counts.put(num, counts.getOrDefault(num, 0) + 1);
+		 }
+		 
+		 // Display bin counts
+		 for (Integer key : counts.keySet()) {
+			 System.out.println("Number: " + key + ", Count: " + counts.get(key));
+		 }
 	}
 	
 	/**
