@@ -4,6 +4,7 @@ import app.StartDesktopApp;
 import manager.ai.AIRegistry;
 import mcts.ExampleDUCT;
 import mcts.ExampleUCT;
+import mcts.SequentialHalvingUCT;
 import random.RandomAI;
 
 /**
@@ -30,6 +31,10 @@ public class LaunchLudii
 		
 		if (!AIRegistry.registerAI("Example DUCT", () -> {return new ExampleDUCT();}, (game) -> {return new ExampleDUCT().supportsGame(game);}))
 			System.err.println("WARNING! Failed to register AI because one with that name already existed!");
+		
+		if (!AIRegistry.registerAI("Sequential Halving UCT", () -> {return new SequentialHalvingUCT();}, (game) -> {return new SequentialHalvingUCT().supportsGame(game);}))
+		System.err.println("WARNING! Failed to register AI because one with that name already existed!");
+		//"Sequential Halving UCT"
 		
 		// Run Ludii
 		StartDesktopApp.main(new String[0]);

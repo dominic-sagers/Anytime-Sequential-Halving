@@ -31,17 +31,16 @@ public class SequentialHalvingUCT extends AI
 	
 	//-------------------------------------------------------------------------
 	//Necessary variables for the SH algorithm.
-	private final int iterationBudget;
+	private int iterationBudget;
 	private final int rounds;// A reference for the amount of rounds 
 	private final int iterPerRound;//Gives how many iterations should be run before halving from the root.
 	private int halvingIterations;
 	/**
 	 * Constructor
 	 */
-	public SequentialHalvingUCT(int iteration_budget)
+	public SequentialHalvingUCT()
 	{
 		this.friendlyName = "Sequential Halving UCT";
-		this.iterationBudget = iteration_budget;
 		this.rounds = (int) Math.ceil(Math.log(iterationBudget));
 		this.iterPerRound = (int) Math.ceil(iterationBudget/this.rounds);
 		
@@ -67,85 +66,194 @@ public class SequentialHalvingUCT extends AI
 		// We'll respect any limitations on max seconds and max iterations (don't care about max depth)
 		final long stopTime = (maxSeconds > 0.0) ? System.currentTimeMillis() + (long) (maxSeconds * 1000L) : Long.MAX_VALUE;
 		final int maxIts = (maxIterations >= 0) ? maxIterations : Integer.MAX_VALUE;
-				
+		
 		int numIterations = 0;
 		int halvingIterations = 0;
-		
+		/*while(numIterations < iterationBudget){
+			* while(halvingIterations < iterPerRound):
+			* 		while(true){
+			* 			do UCT from current node
+			* 			}
+						halvingIterations++
+
+		 * }
+		 * if(all root children explored){
+		 * halveRoot();
+		 * }else{
+		 * 
+		 * 	currentNode = next child
+		 * 
+		 * }
+		 *	
+			}
+		 */
+
+
+
 		// Our main loop through MCTS iterations
+		boolean rootFullyExpanded = false;
+		int numPossibleMoves = root.unexpandedMoves.size();
+		System.err.println("possible moves: " + numPossibleMoves);
+		int rootNodesVisited = 0;
+
+		System.out.println("Maxits: " + maxIts + " \n numIterations: " + numIterations);
+		//System.currentTimeMillis() < stopTime && 
 		while 
 		(
 			numIterations < maxIts && 					// Respect iteration limit
-			System.currentTimeMillis() < stopTime && 	// Respect time limit
+				// Respect time limit
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
 		{
-		
+		boolean firstRound = true;
+
+		// Start in root node
+		if(!rootFullyExpanded){
+
 			while(halvingIterations < this.iterPerRound){//checks to see if we are ready to halve from the root
-		
-				// Start in root node
+
 				Node current = root;
 				
 				// Traverse tree
 				while (true)
+			{
+				if (current.context.trial().over())
 				{
-					if (current.context.trial().over())
-					{
-						// We've reached a terminal state
-						break;
-					}
-					
-					current = select(current);
-					
-					if (current.visitCount == 0)
-					{
-						// We've expanded a new node, time for playout!
-						break;
-					}
+					// We've reached a terminal state
+					break;
 				}
 				
-				Context contextEnd = current.context;
+				current = select(current);
 				
-				if (!contextEnd.trial().over())
+				if (current.visitCount == 0)
 				{
-					// Run a playout if we don't already have a terminal game state in node
-					contextEnd = new Context(contextEnd);
-					game.playout
-					(
-						contextEnd, 
-						null, 
-						-1.0, 
-						null, 
-						0, 
-						-1, 
-						ThreadLocalRandom.current()
-					);
+					// We've expanded a new node, time for playout!
+					break;
 				}
-				
-				// This computes utilities for all players at the of the playout,
-				// which will all be values in [-1.0, 1.0]
-				final double[] utilities = RankUtils.utilities(contextEnd);
-				
-				// Backpropagate utilities through the tree
-				while (current != null)
-				{
-					current.visitCount += 1;
-					for (int p = 1; p <= game.players().count(); ++p)
-					{
-						current.scoreSums[p] += utilities[p];
-					}
-					current = current.parent;
-				}
-				
-				// Increment iteration counts
-				++numIterations;
-				++this.halvingIterations;
-			
 			}
-			//Time to Halve -> Get best nodes from the root and halve them.
-			halveRoot(root);
-			//Get back to normal algorithm...
+			
+			Context contextEnd = current.context;
+			
+			if (!contextEnd.trial().over())
+			{
+				// Run a playout if we don't already have a terminal game state in node
+				contextEnd = new Context(contextEnd);
+				game.playout
+				(
+					contextEnd, 
+					null, 
+					-1.0, 
+					null, 
+					0, 
+					-1, 
+					ThreadLocalRandom.current()
+				);
+			}
+			
+			// This computes utilities for all players at the of the playout,
+			// which will all be values in [-1.0, 1.0]
+			final double[] utilities = RankUtils.utilities(contextEnd);
+			
+			// Backpropagate utilities through the tree
+			while (current != null)
+			{
+				current.visitCount += 1;
+				for (int p = 1; p <= game.players().count(); ++p)
+				{
+					current.scoreSums[p] += utilities[p];
+				}
+				current = current.parent;
+			}
+			
+			rootNodesVisited++;
+			if(rootNodesVisited == numPossibleMoves){
+				System.out.println("First round over");
+				rootFullyExpanded = true;
+				firstRound = true;
+			}
 
-			this.halvingIterations = 0;//reset counter for halving next time
+
+		}
+
+		}else{
+
+				int nodeIndex = 0;
+				Node currentChild = root.children.get(nodeIndex); 
+				System.out.println("running UCT on node: " + nodeIndex);
+				while(halvingIterations < this.iterPerRound){//checks to see if we are ready to halve from the root
+					if(firstRound && halvingIterations == 0){halvingIterations = 1;}
+					
+
+						Node current = currentChild;
+						
+						// Traverse tree
+						while (true)
+					{
+						if (current.context.trial().over())
+						{
+							// We've reached a terminal state
+							break;
+						}
+						
+						current = select(current);
+						
+						if (current.visitCount == 0)
+						{
+							// We've expanded a new node, time for playout!
+							break;
+						}
+					}
+					
+					Context contextEnd = current.context;
+					
+					if (!contextEnd.trial().over())
+					{
+						// Run a playout if we don't already have a terminal game state in node
+						contextEnd = new Context(contextEnd);
+						game.playout
+						(
+							contextEnd, 
+							null, 
+							-1.0, 
+							null, 
+							0, 
+							-1, 
+							ThreadLocalRandom.current()
+						);
+					}
+					
+					// This computes utilities for all players at the of the playout,
+					// which will all be values in [-1.0, 1.0]
+					final double[] utilities = RankUtils.utilities(contextEnd);
+					
+					// Backpropagate utilities through the tree
+					while (current != null)
+					{
+						current.visitCount += 1;
+						for (int p = 1; p <= game.players().count(); ++p)
+						{
+							current.scoreSums[p] += utilities[p];
+						}
+						current = current.parent;
+					}
+					
+					// Increment iteration counts
+					++numIterations;
+					++this.halvingIterations;
+
+
+				}
+
+			nodeIndex++;
+			halvingIterations = 0;
+			if(nodeIndex >= root.children.size()){
+				System.out.println("Halving root");
+				halveRoot(root);
+				firstRound = false;
+				nodeIndex = 0;
+			}
+		}
+
 		}
 
 		

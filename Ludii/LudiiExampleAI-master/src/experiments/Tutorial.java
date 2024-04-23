@@ -168,7 +168,7 @@ public class Tutorial
 							game, 
 							new Context(context),
 							0.2,
-							-1,
+							100,
 							-1
 						);
 								
