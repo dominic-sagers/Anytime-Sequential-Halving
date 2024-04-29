@@ -100,11 +100,11 @@ public class SequentialHalvingUCT extends AI
 		boolean rootFullyExpanded = false;
 		boolean firstRound = true;
 		int numPossibleMoves = root.unexpandedMoves.size();
-		System.err.println("possible moves: " + numPossibleMoves);
+		// System.err.println("possible moves: " + numPossibleMoves);
 		int rootNodesVisited = 0;
-
-		System.out.println("iterationBudget: " + this.iterationBudget + " \n numIterations: " + this.numIterations);
-		System.out.println("Iter per round: " + this.iterPerRound);
+		int nodeIndex = 0;
+		// System.out.println("iterationBudget: " + this.iterationBudget + " \n numIterations: " + this.numIterations);
+		// System.out.println("Iter per round: " + this.iterPerRound);
 		//System.currentTimeMillis() < stopTime && 
 		while 
 		(
@@ -173,6 +173,8 @@ public class SequentialHalvingUCT extends AI
 			}
 			
 			rootNodesVisited++;
+			this.numIterations += 1;
+			this.halvingIterations += 1;
 			if(rootNodesVisited == numPossibleMoves){
 				//System.out.println("First round over");
 				firstRound = true;
@@ -181,7 +183,7 @@ public class SequentialHalvingUCT extends AI
 
 		}else{
 			//Exploring nodes still in List
-				int nodeIndex = 0;
+				
 				Node currentChild = root.children.get(nodeIndex); 
 				
 				
@@ -190,7 +192,7 @@ public class SequentialHalvingUCT extends AI
 					//System.out.println(this.halvingIterations);
 					//out.println(this.iterPerRound);
 
-					if(firstRound && this.halvingIterations == 0){this.halvingIterations += 1;}
+					// if(firstRound && this.halvingIterations == 0){this.halvingIterations += 1;}
 					
 
 						Node current = currentChild;
@@ -253,6 +255,7 @@ public class SequentialHalvingUCT extends AI
 					this.halvingIterations += 1;
 					if(nodeIndex + 1 >= numPossibleMoves){
 						nodeIndex = 0;
+						currentChild = root.children.get(nodeIndex);
 					}else{
 						nodeIndex++;
 						currentChild = root.children.get(nodeIndex);
@@ -267,9 +270,19 @@ public class SequentialHalvingUCT extends AI
 			//System.out.println("numIterations: " + this.numIterations);
 			halveRoot(root);
 			numPossibleMoves = root.children.size();
+			//System.out.println(numPossibleMoves);
 			this.iterPerRound = Double.valueOf(Math.ceil(this.iterPerRound / 2)).intValue();
-			if(this.iterPerRound <=0){ this.iterPerRound = 2;}
+			// System.out.println("Iterperround: " + this.iterPerRound);
+			if(this.iterPerRound < 2){ this.iterPerRound = 2;}
 			//System.out.println("iterperround after halving: " + this.iterPerRound);
+
+			if(nodeIndex + 1 >= numPossibleMoves){
+				nodeIndex = 0;
+				currentChild = root.children.get(nodeIndex);
+			}else{
+				nodeIndex++;
+				currentChild = root.children.get(nodeIndex);
+			}
 			firstRound = false;
 		}
 		}
@@ -278,6 +291,7 @@ public class SequentialHalvingUCT extends AI
 		// Return the move we wish to play
 		System.out.println("VisitCounts\n______________");
 		displayHist(hist);
+		System.out.println(hist.toString());
 		System.out.println("______________");
 		return finalMoveSelection(root);
 	}
@@ -317,6 +331,7 @@ public class SequentialHalvingUCT extends AI
 
 			//make a new list which only contains the nodes we want to remove from the tree:
 			double halfSizeTemp = Math.ceil(nodeValues.size() / 2);
+			if(halfSizeTemp < 2){halfSizeTemp = 2;}
 			int halfSize = Double.valueOf(halfSizeTemp).intValue();
 			ArrayList<ArrayList<Double>> lowerHalf = new ArrayList<>(nodeValues.subList(halfSize, nodeValues.size()));
 
@@ -435,9 +450,7 @@ public class SequentialHalvingUCT extends AI
 	}
 	
 	/**
-	 * Selects the move we wish to play using the "Robust Child" strategy
-	 * (meaning that we play the move leading to the child of the root node
-	 * with the highest visit count).
+	 * Selects best move based on the highest exploit value (rather than visit count, because SH will visit all root children equally regardless)
 	 * 
 	 * @param rootNode
 	 * @return
@@ -445,25 +458,25 @@ public class SequentialHalvingUCT extends AI
 	public static Move finalMoveSelection(final Node rootNode)
 	{
 		Node bestChild = null;
-        int bestVisitCount = Integer.MIN_VALUE;
+        double bestExploit = Integer.MIN_VALUE;
         int numBestFound = 0;
         
         final int numChildren = rootNode.children.size();
-
+		final int mover = rootNode.context.state().mover();
         for (int i = 0; i < numChildren; ++i) 
         {
         	final Node child = rootNode.children.get(i);
-        	final int visitCount = child.visitCount;
+        	final double exploit = child.scoreSums[mover] / child.visitCount;
             
-            if (visitCount > bestVisitCount)
+            if (exploit > bestExploit)
             {
-                bestVisitCount = visitCount;
+                bestExploit = exploit;
                 bestChild = child;
                 numBestFound = 1;
             }
             else if 
             (
-            	visitCount == bestVisitCount && 
+            	exploit == bestExploit && 
             	ThreadLocalRandom.current().nextInt() % ++numBestFound == 0
             )
             {

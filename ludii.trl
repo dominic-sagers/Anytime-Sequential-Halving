@@ -1,38 +1,18 @@
-game=/lud/board/war/replacement/eliminate/all/Surakarta.lud
+game=/lud/board/space/line/Tic-Tac-Toe.lud
 START GAME OPTIONS
-Corners Capture/False
-Slide/To Capture
-End Rules/No Piece
-Version/Official
 END GAME OPTIONS
-RNG internal state=-112,69,-60,-85,-80,8,-18,-17
-Move=[Move:mover=0,from=0,to=0,actions=[Add:type=Vertex,to=0,what=1]]
-Move=[Move:mover=0,from=1,to=1,actions=[Add:type=Vertex,to=1,what=1]]
-Move=[Move:mover=0,from=2,to=2,actions=[Add:type=Vertex,to=2,what=1]]
-Move=[Move:mover=0,from=3,to=3,actions=[Add:type=Vertex,to=3,what=1]]
-Move=[Move:mover=0,from=4,to=4,actions=[Add:type=Vertex,to=4,what=1]]
-Move=[Move:mover=0,from=5,to=5,actions=[Add:type=Vertex,to=5,what=1]]
-Move=[Move:mover=0,from=6,to=6,actions=[Add:type=Vertex,to=6,what=1]]
-Move=[Move:mover=0,from=7,to=7,actions=[Add:type=Vertex,to=7,what=1]]
-Move=[Move:mover=0,from=8,to=8,actions=[Add:type=Vertex,to=8,what=1]]
-Move=[Move:mover=0,from=9,to=9,actions=[Add:type=Vertex,to=9,what=1]]
-Move=[Move:mover=0,from=10,to=10,actions=[Add:type=Vertex,to=10,what=1]]
-Move=[Move:mover=0,from=11,to=11,actions=[Add:type=Vertex,to=11,what=1]]
-Move=[Move:mover=0,from=24,to=24,actions=[Add:type=Vertex,to=24,what=2]]
-Move=[Move:mover=0,from=25,to=25,actions=[Add:type=Vertex,to=25,what=2]]
-Move=[Move:mover=0,from=26,to=26,actions=[Add:type=Vertex,to=26,what=2]]
-Move=[Move:mover=0,from=27,to=27,actions=[Add:type=Vertex,to=27,what=2]]
-Move=[Move:mover=0,from=28,to=28,actions=[Add:type=Vertex,to=28,what=2]]
-Move=[Move:mover=0,from=29,to=29,actions=[Add:type=Vertex,to=29,what=2]]
-Move=[Move:mover=0,from=30,to=30,actions=[Add:type=Vertex,to=30,what=2]]
-Move=[Move:mover=0,from=31,to=31,actions=[Add:type=Vertex,to=31,what=2]]
-Move=[Move:mover=0,from=32,to=32,actions=[Add:type=Vertex,to=32,what=2]]
-Move=[Move:mover=0,from=33,to=33,actions=[Add:type=Vertex,to=33,what=2]]
-Move=[Move:mover=0,from=34,to=34,actions=[Add:type=Vertex,to=34,what=2]]
-Move=[Move:mover=0,from=35,to=35,actions=[Add:type=Vertex,to=35,what=2]]
-Move=[Move:mover=1,from=9,to=15,actions=[Move:typeFrom=Vertex,from=9,typeTo=Vertex,to=15,decision=true]]
-Move=[Move:mover=2,from=28,to=22,actions=[Move:typeFrom=Vertex,from=28,typeTo=Vertex,to=22,decision=true]]
-numInitialPlacementMoves=24
+RNG internal state=38,18,-23,-30,69,115,72,39
+Move=[Move:mover=1,from=4,to=4,actions=[Add:type=Cell,to=4,what=1,decision=true]]
+Move=[Move:mover=2,from=0,to=0,actions=[Add:type=Cell,to=0,what=2,decision=true]]
+Move=[Move:mover=1,from=8,to=8,actions=[Add:type=Cell,to=8,what=1,decision=true]]
+Move=[Move:mover=2,from=2,to=2,actions=[Add:type=Cell,to=2,what=2,decision=true]]
+Move=[Move:mover=1,from=1,to=1,actions=[Add:type=Cell,to=1,what=1,decision=true]]
+Move=[Move:mover=2,from=7,to=7,actions=[Add:type=Cell,to=7,what=2,decision=true]]
+Move=[Move:mover=1,from=6,to=6,actions=[Add:type=Cell,to=6,what=1,decision=true]]
+Move=[Move:mover=2,from=5,to=5,actions=[Add:type=Cell,to=5,what=2,decision=true]]
+Move=[Move:mover=1,from=3,to=3,actions=[Add:type=Cell,to=3,what=1,decision=true]]
+Move=[Move:mover=2,actions=[Pass:decision=true,forced=true]]
+numInitialPlacementMoves=0
 rankings=0.0,0.0,0.0
 SANDBOX=false
 LUDII_VERSION=1.3.12
