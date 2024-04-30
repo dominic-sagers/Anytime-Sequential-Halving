@@ -32,17 +32,15 @@ public class SHUCTTime extends AI
 	
 	//-------------------------------------------------------------------------
 	//Necessary variables for the SH algorithm.
-	private int timeBudget;
+	//private int timeBudget;
 	private int rounds;// A reference for the amount of rounds 
-	private int iterPerRound;//Gives how many iterations should be run before halving from the root.
-	private int timeSinceLastHalf;
-	private int currentTime;
+	private int timePerRound;
 	/**
 	 * Constructor
 	 */
 	public SHUCTTime()
 	{
-		this.friendlyName = "Sequential Halving UCT - Time Based";
+		this.friendlyName = "SHUCTTime";
 	}
 	
 	//-------------------------------------------------------------------------
@@ -63,34 +61,18 @@ public class SHUCTTime extends AI
 		final Node root = new Node(null, null, context);
 		
 		// We'll respect any limitations on max seconds and max iterations (don't care about max depth)
-		final long stopTime = (maxSeconds > 0.0) ? System.currentTimeMillis() + (long) (maxSeconds * 1000L) : Long.MAX_VALUE;
-		final int maxIts = (maxIterations >= 0) ? maxIterations : Integer.MAX_VALUE;
 		
-		this.iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
-		this.rounds = (int) Math.ceil(Math.log(iterationBudget));
-		this.iterPerRound = (int) Math.ceil(iterationBudget/2);
-		this.numIterations = 0;
-		this.halvingIterations = 0;
+		
+		// this.timeBudget = Double.valueOf(maxSeconds).intValue();
+		this.rounds = (int) Math.ceil(Math.log(maxSeconds));
+		this.timePerRound = (int) (Math.ceil(maxSeconds*1000L)/2);
+		final long stopTime = (maxSeconds > 0.0) ? System.currentTimeMillis() + (long) (maxSeconds * 1000L) : Long.MAX_VALUE;
+		// System.out.println(maxSeconds);
+		// System.out.println(this.timePerRound);
+		long halveTime = System.currentTimeMillis() + this.timePerRound;
+		// final int maxIts = (maxIterations >= 0) ? maxIterations : Integer.MAX_VALUE;
+		
 
-		//ALGORITHM IDEA
-		/*while(numIterations < iterationBudget){
-			* while(halvingIterations < iterPerRound):
-			* 		while(true){
-			* 			do UCT from current node
-			* 			}
-						halvingIterations++
-
-		 * }
-		 * if(all root children explored){
-		 * halveRoot();
-		 * }else{
-		 * 
-		 * 	currentNode = next child
-		 * 
-		 * }
-		 *	
-			}
-		 */
 
 
 
@@ -107,7 +89,7 @@ public class SHUCTTime extends AI
 		//System.currentTimeMillis() < stopTime && 
 		while 
 		(
-			this.numIterations < (this.iterationBudget) && 					// Respect iteration limit
+			System.currentTimeMillis() < stopTime && 					// Respect iteration limit
 				// Respect time limit
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
@@ -172,8 +154,6 @@ public class SHUCTTime extends AI
 			}
 			
 			rootNodesVisited++;
-			this.numIterations += 1;
-			this.halvingIterations += 1;
 			if(rootNodesVisited == numPossibleMoves){
 				//System.out.println("First round over");
 				firstRound = true;
@@ -186,7 +166,7 @@ public class SHUCTTime extends AI
 				Node currentChild = root.children.get(nodeIndex); 
 				
 				
-				while(this.halvingIterations < this.iterPerRound){//checks to see if we are ready to halve from the root
+				while(System.currentTimeMillis() < halveTime){//checks to see if we are ready to halve from the root
 					//System.out.println("running UCT on node: " + nodeIndex);
 					//System.out.println(this.halvingIterations);
 					//out.println(this.iterPerRound);
@@ -250,8 +230,6 @@ public class SHUCTTime extends AI
 					// Increment iteration counts
 
 					hist.add(nodeIndex);
-					this.numIterations += 1;
-					this.halvingIterations += 1;
 					if(nodeIndex + 1 >= numPossibleMoves){
 						nodeIndex = 0;
 						currentChild = root.children.get(nodeIndex);
@@ -264,15 +242,15 @@ public class SHUCTTime extends AI
 				}
 			
 		//After children have been explored equally, we halve from the root.
-			this.halvingIterations = 0;
 			//System.out.println("Halving root");
 			//System.out.println("numIterations: " + this.numIterations);
 			halveRoot(root);
 			numPossibleMoves = root.children.size();
 			//System.out.println(numPossibleMoves);
-			this.iterPerRound = Double.valueOf(Math.ceil(this.iterPerRound / 2)).intValue();
+			this.timePerRound = Double.valueOf(Math.ceil(this.timePerRound / 2)).intValue();
 			// System.out.println("Iterperround: " + this.iterPerRound);
-			if(this.iterPerRound < 2){ this.iterPerRound = 2;}
+			if(this.timePerRound < 1){ this.timePerRound = 2;}
+			halveTime = System.currentTimeMillis() + this.timePerRound;
 			//System.out.println("iterperround after halving: " + this.iterPerRound);
 
 			if(nodeIndex + 1 >= numPossibleMoves){
@@ -288,10 +266,8 @@ public class SHUCTTime extends AI
 
 		
 		// Return the move we wish to play
-		System.out.println("VisitCounts\n______________");
-		displayHist(hist);
-		System.out.println(hist.toString());
-		System.out.println("______________");
+		displayHist(hist, this);
+		//System.out.println(hist.toString());
 		return finalMoveSelection(root);
 	}
 
@@ -371,23 +347,24 @@ public class SHUCTTime extends AI
 
 	}
 
-	public static void displayHist(ArrayList<Integer> hist){
+	public static void displayHist(ArrayList<Integer> hist, SHUCTTime algo){
 		 
-		 // Count occurrences of each integer
-		 HashMap<Integer, Integer> counts = new HashMap<>();
-		 for (Integer num : hist) {
-			 counts.put(num, counts.getOrDefault(num, 0) + 1);
-		 }
-		 
-		 // Display bin counts
-		 for (Integer key : counts.keySet()) {
-			 System.out.println("Number: " + key + ", Count: " + counts.get(key));
-		 }
-	}
-
-	public static long getTimeElapsed(long currentTime, long previousTime){
+		// Count occurrences of each integer
+		HashMap<Integer, Integer> counts = new HashMap<>();
+		System.out.println("VisitCounts\n______________");
+		System.out.println(algo.friendlyName);
+		for (Integer num : hist) {
+			counts.put(num, counts.getOrDefault(num, 0) + 1);
+		}
 		
-	}
+		// Display bin counts
+		for (Integer key : counts.keySet()) {
+			System.out.println("Number: " + key + ", Count: " + counts.get(key));
+		}
+
+		System.out.println("______________");
+   }
+
 	
 	/**
 	 * Selects child of the given "current" node according to UCB1 equation.

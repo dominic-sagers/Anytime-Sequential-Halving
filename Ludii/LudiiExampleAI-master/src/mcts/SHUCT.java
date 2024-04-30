@@ -22,7 +22,7 @@ import java.lang.Math.*;
  * This class is a modified version of the example code provided by Dennis Soemers.
  * @author Dennis Soemers, Dominic Sagers
  */
-public class SequentialHalvingUCT extends AI
+public class SHUCT extends AI
 {
 	
 	//-------------------------------------------------------------------------
@@ -41,9 +41,9 @@ public class SequentialHalvingUCT extends AI
 	/**
 	 * Constructor
 	 */
-	public SequentialHalvingUCT()
+	public SHUCT()
 	{
-		this.friendlyName = "Sequential Halving UCT";
+		this.friendlyName = "SHUCT";
 	}
 	
 	//-------------------------------------------------------------------------
@@ -289,10 +289,10 @@ public class SequentialHalvingUCT extends AI
 
 		
 		// Return the move we wish to play
-		System.out.println("VisitCounts\n______________");
-		displayHist(hist);
-		System.out.println(hist.toString());
-		System.out.println("______________");
+		
+		displayHist(hist, this);
+		//System.out.println(hist.toString());
+		
 		return finalMoveSelection(root);
 	}
 
@@ -342,40 +342,15 @@ public class SequentialHalvingUCT extends AI
 				rootNode.children.remove(Double.valueOf(lowerHalf.get(i).get(0)).intValue());
 			}
 		}
-		//Keeplist method:
-
-		// List<Node> keepList = new ArrayList<Node>();
-		// int[] lowerIndexes = new int[lowerHalf.size()];
-
-		// for(int i = 0;i<lowerHalf.size();i++){
-		// 	lowerIndexes[i] = Double.valueOf(lowerHalf.get(i).get(0)).intValue();
-		// }
-		
-		// //Keep the nodes that are not in lowerHalf list
-		// for(int i = 0; i < rootNode.children.size(); i++){
-		// 	boolean canAdd = true;
-		// 	for(int j = 0; j < lowerIndexes.length; j++){
-		// 		if(lowerIndexes[j] == i){
-		// 			canAdd = false;
-		// 		}
-		// 	}
-
-		// 	if(canAdd){
-		// 		keepList.add(rootNode.children.get(i));
-		// 	}
-		// }
-		
-
-		//Replace the rootNode children list with keeplist
-		// rootNode.children = keepList;
-		
-
+	
 	}
 
-	public static void displayHist(ArrayList<Integer> hist){
+	public static void displayHist(ArrayList<Integer> hist, SHUCT algo){
 		 
 		 // Count occurrences of each integer
 		 HashMap<Integer, Integer> counts = new HashMap<>();
+		 System.out.println("VisitCounts\n______________");
+		 System.out.println(algo.friendlyName);
 		 for (Integer num : hist) {
 			 counts.put(num, counts.getOrDefault(num, 0) + 1);
 		 }
@@ -384,6 +359,8 @@ public class SequentialHalvingUCT extends AI
 		 for (Integer key : counts.keySet()) {
 			 System.out.println("Number: " + key + ", Count: " + counts.get(key));
 		 }
+
+		 System.out.println("______________");
 	}
 	
 	/**
@@ -564,3 +541,32 @@ public class SequentialHalvingUCT extends AI
 	//-------------------------------------------------------------------------
 
 }
+
+	//Keeplist method:
+
+		// List<Node> keepList = new ArrayList<Node>();
+		// int[] lowerIndexes = new int[lowerHalf.size()];
+
+		// for(int i = 0;i<lowerHalf.size();i++){
+		// 	lowerIndexes[i] = Double.valueOf(lowerHalf.get(i).get(0)).intValue();
+		// }
+		
+		// //Keep the nodes that are not in lowerHalf list
+		// for(int i = 0; i < rootNode.children.size(); i++){
+		// 	boolean canAdd = true;
+		// 	for(int j = 0; j < lowerIndexes.length; j++){
+		// 		if(lowerIndexes[j] == i){
+		// 			canAdd = false;
+		// 		}
+		// 	}
+
+		// 	if(canAdd){
+		// 		keepList.add(rootNode.children.get(i));
+		// 	}
+		// }
+		
+
+		//Replace the rootNode children list with keeplist
+		// rootNode.children = keepList;
+		
+

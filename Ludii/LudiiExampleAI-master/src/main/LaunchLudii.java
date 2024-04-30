@@ -5,7 +5,7 @@ import manager.ai.AIRegistry;
 import mcts.ExampleDUCT;
 import mcts.ExampleUCT;
 import mcts.SHUCTTime;
-import mcts.SequentialHalvingUCT;
+import mcts.SHUCT;
 import random.RandomAI;
 
 /**
@@ -33,12 +33,12 @@ public class LaunchLudii
 		if (!AIRegistry.registerAI("Example DUCT", () -> {return new ExampleDUCT();}, (game) -> {return new ExampleDUCT().supportsGame(game);}))
 			System.err.println("WARNING! Failed to register AI because one with that name already existed!");
 		
-		if (!AIRegistry.registerAI("Sequential Halving UCT", () -> {return new SequentialHalvingUCT();}, (game) -> {return new SequentialHalvingUCT().supportsGame(game);}))
+		if (!AIRegistry.registerAI("SHUCT", () -> {return new SHUCT();}, (game) -> {return new SHUCT().supportsGame(game);}))
 		System.err.println("WARNING! Failed to register AI because one with that name already existed!");
 		//"Sequential Halving UCT"
 
 
-		if (!AIRegistry.registerAI("Sequential Halving UCT - Time Based", () -> {return new SHUCTTime();}, (game) -> {return new SHUCTTime().supportsGame(game);}))
+		if (!AIRegistry.registerAI("SHUCTTime", () -> {return new SHUCTTime();}, (game) -> {return new SHUCTTime().supportsGame(game);}))
 		System.err.println("WARNING! Failed to register AI because one with that name already existed!");
 
 		
