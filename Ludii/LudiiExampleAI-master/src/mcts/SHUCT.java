@@ -33,17 +33,17 @@ public class SHUCT extends AI
 	//-------------------------------------------------------------------------
 	//Necessary variables for the SH algorithm.
 	private final int iterationBudgetMultiplier = 1000;
-	private int iterationBudget;
-	private int rounds;// A reference for the amount of rounds 
+	private int iterationBudget;//How many iterations we are allotted during this search
+	private int rounds;// A reference for the amount of rounds (the amount of times we will halve the tree)
 	private int iterPerRound;//Gives how many iterations should be run before halving from the root.
-	private int halvingIterations;
-	private int numIterations;
+	private int halvingIterations;//Tracks the number of inner iterations for halving purposes
+	private int numIterations;// Tracks the number of total iterations for the main loop
 	/**
 	 * Constructor
 	 */
 	public SHUCT()
 	{
-		this.friendlyName = "SHUCT";
+		this.friendlyName = "SHUCT";//Sequential Halving UCT
 	}
 	
 	//-------------------------------------------------------------------------
@@ -62,10 +62,6 @@ public class SHUCT extends AI
 		
 		// Start out by creating a new root node (no tree reuse in this example)
 		final Node root = new Node(null, null, context);
-		
-		// We'll respect any limitations on max seconds and max iterations (don't care about max depth)
-		final long stopTime = (maxSeconds > 0.0) ? System.currentTimeMillis() + (long) (maxSeconds * 1000L) : Long.MAX_VALUE;
-		final int maxIts = (maxIterations >= 0) ? maxIterations : Integer.MAX_VALUE;
 		
 		this.iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
 		this.rounds = (int) Math.ceil(Math.log(iterationBudget));
@@ -96,16 +92,16 @@ public class SHUCT extends AI
 
 
 		// Our main loop through MCTS iterations
-		ArrayList<Integer> hist = new ArrayList<>();
+		ArrayList<Integer> hist = new ArrayList<>();//
 		boolean rootFullyExpanded = false;
-		boolean firstRound = true;
 		int numPossibleMoves = root.unexpandedMoves.size();
 		// System.err.println("possible moves: " + numPossibleMoves);
 		int rootNodesVisited = 0;
 		int nodeIndex = 0;
 		// System.out.println("iterationBudget: " + this.iterationBudget + " \n numIterations: " + this.numIterations);
 		// System.out.println("Iter per round: " + this.iterPerRound);
-		//System.currentTimeMillis() < stopTime && 
+
+
 		while 
 		(
 			this.numIterations < (this.iterationBudget) && 					// Respect iteration limit
@@ -176,13 +172,11 @@ public class SHUCT extends AI
 			this.numIterations += 1;
 			this.halvingIterations += 1;
 			if(rootNodesVisited == numPossibleMoves){
-				//System.out.println("First round over");
-				firstRound = true;
+				//System.out.println("Root expansion over");
 				rootFullyExpanded = true;
 			}
 
-		}else{
-			//Exploring nodes still in List
+		}else{//All root nodes are added to the Node list, so we can now continue the search with halving in mind.
 				
 				Node currentChild = root.children.get(nodeIndex); 
 				
@@ -269,21 +263,21 @@ public class SHUCT extends AI
 			//System.out.println("Halving root");
 			//System.out.println("numIterations: " + this.numIterations);
 			halveRoot(root);
+			hist.add(999);//Identifier for where halving occured in the hist
+
+
 			numPossibleMoves = root.children.size();
 			//System.out.println(numPossibleMoves);
+
+
 			this.iterPerRound = Double.valueOf(Math.ceil(this.iterPerRound / 2)).intValue();
 			// System.out.println("Iterperround: " + this.iterPerRound);
-			if(this.iterPerRound < 2){ this.iterPerRound = 2;}
+
+			if(this.iterPerRound < 2){ this.iterPerRound = 2;}//Base case, so that we are always at least searching two nodes (shouldnt matter if algorithm runs correctly)
 			//System.out.println("iterperround after halving: " + this.iterPerRound);
 
-			if(nodeIndex + 1 >= numPossibleMoves){
-				nodeIndex = 0;
-				currentChild = root.children.get(nodeIndex);
-			}else{
-				nodeIndex++;
-				currentChild = root.children.get(nodeIndex);
-			}
-			firstRound = false;
+
+			if(nodeIndex >= numPossibleMoves){nodeIndex = 0;}//if we are outside of list range after halving, reset to start
 		}
 		}
 
@@ -296,6 +290,9 @@ public class SHUCT extends AI
 		return finalMoveSelection(root);
 	}
 
+	/**This method takes the rootNode, sorts it's children by their exploit value, and then removes half of the worst children from the root.
+	 * @param rootNode
+	 */
 	public static void halveRoot(Node rootNode){
 		int numChildren = rootNode.children.size();
 		if(numChildren > 2){
@@ -337,6 +334,8 @@ public class SHUCT extends AI
 
 			lowerHalf.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(0)).reversed());//sort based on index in descending order
 			//System.out.println("Worst nodes, sorted ascending: " + lowerHalf.toString());
+
+
 			//Remove the worst nodes from the list, by sorting first, this index based removal should happen in a way that doesn't break./
 			for(int i = 0; i < lowerHalf.size();i++){
 				rootNode.children.remove(Double.valueOf(lowerHalf.get(i).get(0)).intValue());
@@ -345,14 +344,21 @@ public class SHUCT extends AI
 	
 	}
 
-	public static void displayHist(ArrayList<Integer> hist, SHUCT algo){
-		 
+	/**
+	 	*This function neatly prints the hist variable used in the algorithm. Displays value counts for each node index visited.
+		 * @param hist
+		 * @param algo
+		 */
+		public static void displayHist(ArrayList<Integer> hist, SHUCT algo){
 		 // Count occurrences of each integer
 		 HashMap<Integer, Integer> counts = new HashMap<>();
 		 System.out.println("VisitCounts\n______________");
 		 System.out.println(algo.friendlyName);
 		 for (Integer num : hist) {
-			 counts.put(num, counts.getOrDefault(num, 0) + 1);
+			if( num != 999){
+				counts.put(num, counts.getOrDefault(num, 0) + 1);
+			}
+			 
 		 }
 		 
 		 // Display bin counts
@@ -427,7 +433,7 @@ public class SHUCT extends AI
 	}
 	
 	/**
-	 * Selects best move based on the highest exploit value (rather than visit count, because SH will visit all root children equally regardless)
+	 * Selects best move based on the highest exploit value (rather than visit count, because SH will visit all root children equally regardless).
 	 * 
 	 * @param rootNode
 	 * @return

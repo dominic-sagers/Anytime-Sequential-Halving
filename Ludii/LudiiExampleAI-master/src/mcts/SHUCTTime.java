@@ -245,6 +245,8 @@ public class SHUCTTime extends AI
 			//System.out.println("Halving root");
 			//System.out.println("numIterations: " + this.numIterations);
 			halveRoot(root);
+			hist.add(999);
+
 			numPossibleMoves = root.children.size();
 			//System.out.println(numPossibleMoves);
 			this.timePerRound = Double.valueOf(Math.ceil(this.timePerRound / 2)).intValue();
@@ -271,6 +273,9 @@ public class SHUCTTime extends AI
 		return finalMoveSelection(root);
 	}
 
+	/**This method takes the rootNode, sorts it's children by their exploit value, and then removes half of the worst children from the root.
+	 * @param rootNode
+	 */
 	public static void halveRoot(Node rootNode){
 		int numChildren = rootNode.children.size();
 		if(numChildren > 2){
@@ -317,36 +322,13 @@ public class SHUCTTime extends AI
 				rootNode.children.remove(Double.valueOf(lowerHalf.get(i).get(0)).intValue());
 			}
 		}
-		//Keeplist method:
-
-		// List<Node> keepList = new ArrayList<Node>();
-		// int[] lowerIndexes = new int[lowerHalf.size()];
-
-		// for(int i = 0;i<lowerHalf.size();i++){
-		// 	lowerIndexes[i] = Double.valueOf(lowerHalf.get(i).get(0)).intValue();
-		// }
-		
-		// //Keep the nodes that are not in lowerHalf list
-		// for(int i = 0; i < rootNode.children.size(); i++){
-		// 	boolean canAdd = true;
-		// 	for(int j = 0; j < lowerIndexes.length; j++){
-		// 		if(lowerIndexes[j] == i){
-		// 			canAdd = false;
-		// 		}
-		// 	}
-
-		// 	if(canAdd){
-		// 		keepList.add(rootNode.children.get(i));
-		// 	}
-		// }
-		
-
-		//Replace the rootNode children list with keeplist
-		// rootNode.children = keepList;
-		
-
 	}
 
+	/**
+	 	*This function neatly prints the hist variable used in the algorithm. Displays value counts for each node index visited.
+		 * @param hist
+		 * @param algo
+		 */
 	public static void displayHist(ArrayList<Integer> hist, SHUCTTime algo){
 		 
 		// Count occurrences of each integer
@@ -354,7 +336,10 @@ public class SHUCTTime extends AI
 		System.out.println("VisitCounts\n______________");
 		System.out.println(algo.friendlyName);
 		for (Integer num : hist) {
-			counts.put(num, counts.getOrDefault(num, 0) + 1);
+			if(num != 999){
+				counts.put(num, counts.getOrDefault(num, 0) + 1);
+			}
+			
 		}
 		
 		// Display bin counts
