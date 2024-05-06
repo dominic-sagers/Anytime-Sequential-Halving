@@ -1,40 +1,22 @@
-game=/lud/board/war/replacement/checkmate/chess/Chess.lud
+game=/lud/board/space/line/Connect Four.lud
 START GAME OPTIONS
+Modelisation/1D
 END GAME OPTIONS
-RNG internal state=31,62,48,-78,107,76,-52,-13
-Move=[Move:mover=0,from=8,to=8,actions=[Add:type=Cell,to=8,what=1]]
-Move=[Move:mover=0,from=9,to=9,actions=[Add:type=Cell,to=9,what=1]]
-Move=[Move:mover=0,from=10,to=10,actions=[Add:type=Cell,to=10,what=1]]
-Move=[Move:mover=0,from=11,to=11,actions=[Add:type=Cell,to=11,what=1]]
-Move=[Move:mover=0,from=12,to=12,actions=[Add:type=Cell,to=12,what=1]]
-Move=[Move:mover=0,from=13,to=13,actions=[Add:type=Cell,to=13,what=1]]
-Move=[Move:mover=0,from=14,to=14,actions=[Add:type=Cell,to=14,what=1]]
-Move=[Move:mover=0,from=15,to=15,actions=[Add:type=Cell,to=15,what=1]]
-Move=[Move:mover=0,from=48,to=48,actions=[Add:type=Cell,to=48,what=2]]
-Move=[Move:mover=0,from=49,to=49,actions=[Add:type=Cell,to=49,what=2]]
-Move=[Move:mover=0,from=50,to=50,actions=[Add:type=Cell,to=50,what=2]]
-Move=[Move:mover=0,from=51,to=51,actions=[Add:type=Cell,to=51,what=2]]
-Move=[Move:mover=0,from=52,to=52,actions=[Add:type=Cell,to=52,what=2]]
-Move=[Move:mover=0,from=53,to=53,actions=[Add:type=Cell,to=53,what=2]]
-Move=[Move:mover=0,from=54,to=54,actions=[Add:type=Cell,to=54,what=2]]
-Move=[Move:mover=0,from=55,to=55,actions=[Add:type=Cell,to=55,what=2]]
-Move=[Move:mover=0,from=0,to=0,actions=[Add:type=Cell,to=0,what=3,state=1]]
-Move=[Move:mover=0,from=7,to=7,actions=[Add:type=Cell,to=7,what=3,state=1]]
-Move=[Move:mover=0,from=1,to=1,actions=[Add:type=Cell,to=1,what=9]]
-Move=[Move:mover=0,from=6,to=6,actions=[Add:type=Cell,to=6,what=9]]
-Move=[Move:mover=0,from=2,to=2,actions=[Add:type=Cell,to=2,what=7]]
-Move=[Move:mover=0,from=5,to=5,actions=[Add:type=Cell,to=5,what=7]]
-Move=[Move:mover=0,from=3,to=3,actions=[Add:type=Cell,to=3,what=11]]
-Move=[Move:mover=0,from=4,to=4,actions=[Add:type=Cell,to=4,what=5,state=1]]
-Move=[Move:mover=0,from=56,to=56,actions=[Add:type=Cell,to=56,what=4,state=1]]
-Move=[Move:mover=0,from=63,to=63,actions=[Add:type=Cell,to=63,what=4,state=1]]
-Move=[Move:mover=0,from=57,to=57,actions=[Add:type=Cell,to=57,what=10]]
-Move=[Move:mover=0,from=62,to=62,actions=[Add:type=Cell,to=62,what=10]]
-Move=[Move:mover=0,from=58,to=58,actions=[Add:type=Cell,to=58,what=8]]
-Move=[Move:mover=0,from=61,to=61,actions=[Add:type=Cell,to=61,what=8]]
-Move=[Move:mover=0,from=59,to=59,actions=[Add:type=Cell,to=59,what=12]]
-Move=[Move:mover=0,from=60,to=60,actions=[Add:type=Cell,to=60,what=6,state=1]]
-numInitialPlacementMoves=32
-rankings=0.0,0.0,0.0
+RNG internal state=-80,52,73,-110,53,59,-3,-116
+Move=[Move:mover=1,from=3,to=3,actions=[Add:type=Cell,to=3,level=0,what=1,decision=true]]
+Move=[Move:mover=2,from=3,to=3,actions=[Add:type=Cell,to=3,level=1,what=2,decision=true]]
+Move=[Move:mover=1,from=3,to=3,actions=[Add:type=Cell,to=3,level=2,what=1,decision=true]]
+Move=[Move:mover=2,from=2,to=2,actions=[Add:type=Cell,to=2,level=0,what=2,decision=true]]
+Move=[Move:mover=1,from=0,to=0,actions=[Add:type=Cell,to=0,level=0,what=1,decision=true]]
+Move=[Move:mover=2,from=1,to=1,actions=[Add:type=Cell,to=1,level=0,what=2,decision=true]]
+Move=[Move:mover=1,from=1,to=1,actions=[Add:type=Cell,to=1,level=1,what=1,decision=true]]
+Move=[Move:mover=2,from=4,to=4,actions=[Add:type=Cell,to=4,level=0,what=2,decision=true]]
+Move=[Move:mover=1,from=3,to=3,actions=[Add:type=Cell,to=3,level=3,what=1,decision=true]]
+Move=[Move:mover=2,from=2,to=2,actions=[Add:type=Cell,to=2,level=1,what=2,decision=true]]
+Move=[Move:mover=1,from=2,to=2,actions=[Add:type=Cell,to=2,level=2,what=1,decision=true]]
+numInitialPlacementMoves=0
+winner=1
+endtype=NaturalEnd
+rankings=0.0,1.0,2.0
 SANDBOX=false
 LUDII_VERSION=1.3.12

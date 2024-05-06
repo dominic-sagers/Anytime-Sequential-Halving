@@ -104,7 +104,7 @@ public class SHUCTAnyTime extends AI
 		boolean rootFullyExpanded = false;
 		boolean firstRound = true;
 		int numPossibleMoves = root.unexpandedMoves.size();
-
+		Node currentChild;
 		ArrayList<Integer> currentChildrenIdx = new ArrayList<Integer>();//A list containing the indexes of the nodes we are searching from root.children
 		for(int i = 0; i < root.children.size();i++){
 			currentChildrenIdx.add(i);
@@ -112,7 +112,7 @@ public class SHUCTAnyTime extends AI
 
 		// System.err.println("possible moves: " + numPossibleMoves);
 		int rootNodesVisited = 0;
-		Node currentChild = root.children.get(0); 
+		
 		int idx = 0;//keeps track of where we are in the index list
 
 		// System.out.println("iterationBudget: " + this.iterationBudget + " \n numIterations: " + this.numIterations);
@@ -190,6 +190,8 @@ public class SHUCTAnyTime extends AI
 					firstRound = true;
 					rootFullyExpanded = true;
 				}
+				
+				currentChild = root.children.get(0); 
 
 			}else{
 				currentChild = root.children.get(currentChildrenIdx.get(idx));
@@ -261,8 +263,9 @@ public class SHUCTAnyTime extends AI
 					for(int i = 0; i < root.children.size();i++){
 						currentChildrenIdx.add(i);
 					}
+					idx = 0;
 				}else{//We havent finished halving, so we halve based on the current exploit values
-					currentChildrenIdx = halveRoot(root);
+					currentChildrenIdx = halveRoot(root, currentChildrenIdx);
 					hist.add(999);
 					idx = 0;
 				}
@@ -281,10 +284,10 @@ public class SHUCTAnyTime extends AI
 	/**This method takes the rootNode, sorts it's children by their exploit value, and then removes half of the worst children from the root.
 	 * @param rootNode
 	 */
-	public static ArrayList<Integer> halveRoot(Node rootNode){
+	public static ArrayList<Integer> halveRoot(Node rootNode, ArrayList<Integer> currentChildrenIndexes){
 		ArrayList<Integer> newIndexes = new ArrayList<>();
 
-		int numChildren = rootNode.children.size();
+		int numChildren = currentChildrenIndexes.size();
 		if(numChildren > 2){
 			final int mover = rootNode.context.state().mover();
 			double bestValue = Double.NEGATIVE_INFINITY;
@@ -297,14 +300,14 @@ public class SHUCTAnyTime extends AI
 			
 			for (int i = 0; i < numChildren; ++i) 
 			{
-				final Node child = rootNode.children.get(i);
+				final Node child = rootNode.children.get(currentChildrenIndexes.get(i));
 				final double exploit = child.scoreSums[mover] / child.visitCount;
 				// final double explore = Math.sqrt(twoParentLog / child.visitCount);
 				// final double ucb1Value = exploit + explore;
 				
 				ArrayList<Double> val = new ArrayList<>();
 
-				val.add((double) i);
+				val.add((double) currentChildrenIndexes.get(i));
 				val.add(exploit);
 				nodeValues.add(val);
 				

@@ -6,6 +6,7 @@ import mcts.ExampleDUCT;
 import mcts.ExampleUCT;
 import mcts.SHUCTTime;
 import mcts.SHUCT;
+import mcts.SHUCTAnyTime;
 import random.RandomAI;
 
 /**
@@ -39,7 +40,9 @@ public class LaunchLudii
 		if (!AIRegistry.registerAI("SHUCTTime", () -> {return new SHUCTTime();}, (game) -> {return new SHUCTTime().supportsGame(game);}))
 		System.err.println("WARNING! Failed to register AI because one with that name already existed!");
 
-		
+		if (!AIRegistry.registerAI("SHUCTAnyTime", () -> {return new SHUCTAnyTime();}, (game) -> {return new SHUCTAnyTime().supportsGame(game);}))
+		System.err.println("WARNING! Failed to register AI because one with that name already existed!");
+
 		// Run Ludii
 		StartDesktopApp.main(new String[0]);
 	}
