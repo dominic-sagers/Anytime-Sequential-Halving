@@ -35,8 +35,6 @@ public class LaunchLudii
 		
 		if (!AIRegistry.registerAI("SHUCT", () -> {return new SHUCT();}, (game) -> {return new SHUCT().supportsGame(game);}))
 		System.err.println("WARNING! Failed to register AI because one with that name already existed!");
-		//"Sequential Halving UCT"
-
 
 		if (!AIRegistry.registerAI("SHUCTTime", () -> {return new SHUCTTime();}, (game) -> {return new SHUCTTime().supportsGame(game);}))
 		System.err.println("WARNING! Failed to register AI because one with that name already existed!");

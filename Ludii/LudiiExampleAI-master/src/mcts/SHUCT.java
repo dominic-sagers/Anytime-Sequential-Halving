@@ -148,7 +148,7 @@ public class SHUCT extends AI
 					-1.0, 
 					null, 
 					0, 
-					-1, 
+					200, 
 					ThreadLocalRandom.current()
 				);
 			}
@@ -173,6 +173,7 @@ public class SHUCT extends AI
 			this.halvingIterations += 1;
 			if(rootNodesVisited == numPossibleMoves){
 				//System.out.println("Root expansion over");
+				System.out.println(rootNodesVisited);
 				rootFullyExpanded = true;
 			}
 
@@ -222,7 +223,7 @@ public class SHUCT extends AI
 							-1.0, 
 							null, 
 							0, 
-							-1, 
+							200, 
 							ThreadLocalRandom.current()
 						);
 					}

@@ -133,7 +133,7 @@ public class SHUCTTime extends AI
 					-1.0, 
 					null, 
 					0, 
-					-1, 
+					200, 
 					ThreadLocalRandom.current()
 				);
 			}
@@ -207,7 +207,7 @@ public class SHUCTTime extends AI
 							-1.0, 
 							null, 
 							0, 
-							-1, 
+							200, 
 							ThreadLocalRandom.current()
 						);
 					}
