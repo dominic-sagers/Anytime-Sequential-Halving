@@ -189,9 +189,10 @@ public class SHUCTAnyTime extends AI
 					//System.out.println("First round over");
 					firstRound = true;
 					rootFullyExpanded = true;
+					currentChild = root.children.get(0); 
 				}
 				
-				currentChild = root.children.get(0); 
+				
 
 			}else{
 				currentChild = root.children.get(currentChildrenIdx.get(idx));
@@ -256,17 +257,22 @@ public class SHUCTAnyTime extends AI
 
 			}
 
-
 			if(idx + 1 >= currentChildrenIdx.size()){//if we have visited the all children before halving
 				if(currentChildrenIdx.size() <= 2){//if we have visited all children AND we have halved the amount of times required
 					currentChildrenIdx = new ArrayList<Integer>();//reset the index list
+
 					for(int i = 0; i < root.children.size();i++){
 						currentChildrenIdx.add(i);
 					}
+
 					idx = 0;
+
 				}else{//We havent finished halving, so we halve based on the current exploit values
+					System.out.println("before: " + currentChildrenIdx.toString());
 					currentChildrenIdx = halveRoot(root, currentChildrenIdx);
 					hist.add(999);
+					System.out.println("After: " + currentChildrenIdx.toString());
+					
 					idx = 0;
 				}
 			}
@@ -317,9 +323,9 @@ public class SHUCTAnyTime extends AI
 			//sort descending based on the second index of each inner list:
 			nodeValues.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(1)).reversed());
 
-			//System.out.println("nodeValues after sorting descending: " + nodeValues.toString());
+			// System.out.println("nodeValues after sorting descending: " + nodeValues.toString());
 
-			//make a new list which only contains the nodes we want to remove from the tree:
+			//make a new list which only contains the nodes we want to keep from the tree:
 			double halfSizeTemp = Math.ceil(nodeValues.size() / 2);
 			if(halfSizeTemp < 2){halfSizeTemp = 2;}
 			int halfSize = Double.valueOf(halfSizeTemp).intValue();
