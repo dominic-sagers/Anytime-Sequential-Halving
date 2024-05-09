@@ -191,6 +191,7 @@ class SequentialHalvingAlgAnyTime_v1:
     self.total_means = {index: 0 for index, arm in enumerate(range(k))} #The total rewards that the algorithm has observed for each arm
     self.hist = []
     self.return_hist = return_hist
+    self.round_iter = 0
 
    
      
@@ -206,8 +207,8 @@ class SequentialHalvingAlgAnyTime_v1:
   def choose_arm(self) -> int:
     #print(f"current_arm: {self.current_arm} current index: {self.current_arms.index(self.current_arm)} considered_arms_amt: {self.considered_arms_amt} current_round: {self.current_round} budget_left: {self.budget_left} sample_count_per_arm: {self.sample_count_per_arm} arms left: {len(self.current_arms)}")
     
-    if self.keys_idx + 1 >= len(self.current_arms_keys):#If this is true, we are ready to halve the search or we are ready to start over
-      
+    if self.round_iter >= len(self.current_arms):#If this is true, we are ready to halve the search or we are ready to start over
+      self.round_iter = 0
       if len(self.current_arms_keys) <= 2:#if true we reset the nodes we search
         self.keys_idx = 0
         self.current_arms_keys = list(self.current_arms.keys())
@@ -237,8 +238,9 @@ class SequentialHalvingAlgAnyTime_v1:
         self.keys_idx = 0
         
     else:
-      
+      self.round_iter = self.round_iter + 1
       self.keys_idx = self.keys_idx + 1
+      if self.keys_idx >= len(self.current_arms_keys): self.keys_idx = 0
       
     self.current_arm = self.current_arms_keys[self.keys_idx]
       # print("Current_arms: " + str(self.current_arms))
@@ -246,7 +248,7 @@ class SequentialHalvingAlgAnyTime_v1:
       # print(self.keys_idx)
       # print("curarm: " + str(self.current_arm))
     if self.return_hist: self.hist.append(self.current_arm)
-    
+
     return self.current_arm
 
       
@@ -480,6 +482,57 @@ class SequentialHalvingAlgTime_v1:
 #     self.total_means[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)]/self.visits[self.current_arms.index(arm)]
 #     self.current_rewards[self.current_arms.index(arm)] = self.total_rewards[self.current_arms.index(arm)]/self.visits[self.current_arms.index(arm)]
 
+class UCB1:
+  """
+  The UCB1 algorithm.
+  """
+
+  def __init__(self, C: float):
+    """
+    :param C: The exploration parameter C.
+    """
+    self.C = C
+    self.t = 0
+    self.num_pulls = [0 for _ in range(k)]
+    self.avg_rewards = np.zeros(k)
+
+  def reset(self) -> None:
+    """
+    Reset all memory.
+    """
+    self.t = 0
+    self.num_pulls = [0 for _ in range(k)]
+    self.avg_rewards = np.zeros(k)
+
+  def choose_arm(self) -> int:
+    """
+    :return: Arm, in [0, k).
+    """
+    self.t = self.t + 1
+    ucbs = np.copy(self.avg_rewards)
+    log_t = log(self.t)
+
+    for i in range(k):
+      if self.num_pulls[i] == 0:
+        ucbs[i] = np.inf
+      else:
+        ucbs[i] = ucbs[i] + self.C * sqrt(log_t / self.num_pulls[i])
+
+    return np.argmax(ucbs)
+
+  def observe_reward(self, arm: int, reward: float) -> None:
+    """
+    This function lets us observe rewards from arms we have selected.
+
+    :param arm: Index (starting at 0) of the arm we played.
+    :param reward: The reward we received.
+    """
+    self.num_pulls[arm] = self.num_pulls[arm] + 1
+    self.avg_rewards[arm] = self.avg_rewards[arm] + ((reward - self.avg_rewards[arm]) / self.num_pulls[arm])
 
   def __str__(self):
+    return f"UCB1({self.C:.3f})"
+  def __str__(self):
     return print(f"Sequential_halving:\nArm history: {self.hist}\n")
+  
+  

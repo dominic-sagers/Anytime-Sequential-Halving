@@ -373,7 +373,7 @@ if __name__ == "__main__":
     plt.subplot(2, 1, 1)
     plt.plot(csv1it["Index"], csv1it["Avg Regret"], label="Iteration Budget", marker='o')
     plt.axhline(y=0, color='r', linestyle='--')  # Add horizontal line at y=0
-    plt.xlabel("Iteration")
+    plt.xlabel("Time Budget (milliseconds)")
     plt.ylabel("Avg Regret")
     plt.title("Avg Regret vs Time Budget (AnyTime Sequential Halving)")
     plt.legend()
@@ -471,25 +471,25 @@ if __name__ == "__main__":
    
     
     
-    # num_arms = 10
-    # means_amt = 100
-    # iterations = 1000
-    # arm_means_idx = 5
+    num_arms = 10
+    means_amt = 100
+    iterations = 1000
+    arm_means_idx = 5
 
-    # time_budget_ms = 3000
+    time_budget_ms = 1000
 
-    # mab_exp_runner = MAB_Experiment_runner(num_arms, means_amt)
-    # # hist = mab_exp_runner.run_sh_anytime_experiment(time_budget_ms, arm_means_idx)
-    # # print(hist)
-    # # mab_exp_runner.plot_sh_experiment(hist,arm_means_idx,time_budget=time_budget_ms,type="anytime")
-    # # mab_exp_runner.run_regret_and_edit_distance_experiment("anytime",time_budget_ms=time_budget_ms,print_results=True)
+    mab_exp_runner = MAB_Experiment_runner(num_arms, means_amt)
+    # hist = mab_exp_runner.run_sh_anytime_experiment(time_budget_ms, arm_means_idx)
+    # print(hist)
+    # mab_exp_runner.plot_sh_experiment(hist,arm_means_idx,time_budget=time_budget_ms,type="anytime")
+    # mab_exp_runner.run_regret_and_edit_distance_experiment("anytime",time_budget_ms=time_budget_ms,print_results=True)
     
     
     # # # # mab_exp_runner.run_regret_and_edit_distance_experiment(algo_type="iteration", iterations=iterations)
     # # # mab_exp_runner.run_regret_and_edit_distance_experiment(algo_type="time", time_budget_ms=1000)
 
     # times = range(500,5500,500)
-    # # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="time", time_range=times)
+    # # # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="time", time_range=times)
     # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="anytime", time_range=times)
     # # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="iteration", iteration_range=[100,500,1000,5000,10000])
     # print(mab_exp_runner.arm_means[arm_means_idx, :])

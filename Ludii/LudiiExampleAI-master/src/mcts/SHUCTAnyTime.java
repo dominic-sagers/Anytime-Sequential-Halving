@@ -105,6 +105,8 @@ public class SHUCTAnyTime extends AI
 		boolean firstRound = true;
 		int numPossibleMoves = root.unexpandedMoves.size();
 		Node currentChild;
+		int armVisitCount = 0;
+		
 		ArrayList<Integer> currentChildrenIdx = new ArrayList<Integer>();//A list containing the indexes of the nodes we are searching from root.children
 		for(int i = 0; i < root.children.size();i++){
 			currentChildrenIdx.add(i);
@@ -185,6 +187,7 @@ public class SHUCTAnyTime extends AI
 				}
 				
 				rootNodesVisited++;
+				armVisitCount++;
 				if(rootNodesVisited == numPossibleMoves){
 					//System.out.println("First round over");
 					firstRound = true;
@@ -253,11 +256,13 @@ public class SHUCTAnyTime extends AI
 				// Increment iteration counts
 
 				hist.add(currentChildrenIdx.get(idx));
+				armVisitCount++;
 				idx++;
 
 			}
 
-			if(idx + 1 >= currentChildrenIdx.size()){//if we have visited the all children before halving
+			if(armVisitCount == numPossibleMoves){//if we have visited the all children before halving
+				armVisitCount = 0;
 				if(currentChildrenIdx.size() <= 2){//if we have visited all children AND we have halved the amount of times required
 					currentChildrenIdx = new ArrayList<Integer>();//reset the index list
 
@@ -268,14 +273,16 @@ public class SHUCTAnyTime extends AI
 					idx = 0;
 
 				}else{//We havent finished halving, so we halve based on the current exploit values
-					System.out.println("before: " + currentChildrenIdx.toString());
+					//System.out.println("before: " + currentChildrenIdx.toString());
 					currentChildrenIdx = halveRoot(root, currentChildrenIdx);
 					hist.add(999);
-					System.out.println("After: " + currentChildrenIdx.toString());
+					//System.out.println("After: " + currentChildrenIdx.toString());
 					
 					idx = 0;
 				}
 			}
+
+			if(idx >= currentChildrenIdx.size()){ idx = 0; }
 
 			firstRound = false;
 		}
