@@ -6,6 +6,7 @@ import pandas as pd
 from scipy.stats import norm
 import SequentialHalvingMAB as sh
 import csv
+from tqdm import tqdm
 
 
 class MAB_Experiment_runner:
@@ -22,6 +23,8 @@ class MAB_Experiment_runner:
     def run_sh_base_experiment(self, iterations, arm_means_idx):
         algo = sh.SequentialHalvingAlg(True, self.num_arms, iterations)
         
+        start_time = int(round(time.time() * 1000))
+        
         rewards = np.zeros(iterations)
         for t in range(iterations):
             arm = algo.choose_arm()
@@ -32,7 +35,37 @@ class MAB_Experiment_runner:
             rewards[t] = reward  
         
         history = algo.hist
+        
+        total_time = int(round(time.time() * 1000)) - start_time
+        
+        
+        
+        print(f"Base SH Done, {iterations} iterations, Time Elapsed: {total_time}")
+        
         return history
+    
+    
+    def get_base_sh_times(self, times, iter_range):
+        time_dict = {}
+        
+        # Initialize tqdm progress bar
+        pbar = tqdm(iter_range, desc='Progress', unit='iteration')
+        
+        for iter in pbar:
+            start_time = int(round(time.time() * 1000))
+
+            self.run_sh_base_experiment(iter, 0)
+
+            total_time = int(round(time.time() * 1000)) - start_time
+            
+            for timee in times:
+                if total_time >= timee-200 and total_time <= timee+200:
+                    time_dict.update({iter : total_time})
+                    break
+        
+        return time_dict
+                
+        
     
     def plot_sh_experiment(self, history,mean_idx, iterations=None, time_budget=None, type="baseline"):
         frequencies = [history.count(i) for i in range(self.num_arms)]
@@ -360,38 +393,61 @@ class MAB_Experiment_runner:
 2. Chosen arm true mean reward over different iteration/time budgets (regret: true mean best arm - true mean chosen arm)
 """   
 if __name__ == "__main__":
+    
+    
     csv1it = pd.read_csv("anytime_regret_edit_distance.csv")
-    csv1time = pd.read_csv("time_regret_edit_distance.csv")
+    csv1time = pd.read_csv("iteration_regret_edit_distance_time_relative.csv")
 
 
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(8, 5))
 
-    # Plotting Avg Regret vs Iteration/Time for CSV 1
-    plt.figure(figsize=(10, 10))
-
-    # Plotting Avg Regret vs Iteration for CSV 1
-    plt.subplot(2, 1, 1)
-    plt.plot(csv1it["Index"], csv1it["Avg Regret"], label="Iteration Budget", marker='o')
+    # Plotting Avg Regret vs Time for both datasets
+    plt.plot(csv1time["Index"], csv1time["Avg Regret"], label="Base SH", marker='x')
+    plt.plot(csv1time["Index"], csv1it["Avg Regret"], label="Iteration Budget", marker='x')
     plt.axhline(y=0, color='r', linestyle='--')  # Add horizontal line at y=0
-    plt.xlabel("Time Budget (milliseconds)")
-    plt.ylabel("Avg Regret")
-    plt.title("Avg Regret vs Time Budget (AnyTime Sequential Halving)")
-    plt.legend()
-    plt.xlim(csv1it["Index"].min(), csv1it["Index"].max())  # Set x-axis limits based on CSV 1 data
 
-    # Plotting Avg Regret vs Time for CSV 1
-    plt.subplot(2, 1, 2)
-    plt.plot(csv1time["Index"], csv1time["Avg Regret"], label="Time Budget", marker='o')
-    plt.axhline(y=0, color='r', linestyle='--')  # Add horizontal line at y=0
-    plt.xlabel("Time Budget (milliseconds)")
+    plt.xlabel("Time (milliseconds) : Iterations")
     plt.ylabel("Avg Regret")
-    plt.title("Avg Regret vs Time Budget (Time Based Sequential Halving - Version 1)")
+    plt.title("AnyTime Sequential Halving vs Base Sequential Halving (Time-Relative Iteration Budgets)")
     plt.legend()
-    plt.xlim(csv1time["Index"].min(), csv1time["Index"].max())  # Set x-axis limits based on CSV 1 data
+
+    # Adjust x-axis labels to show time and corresponding iterations
+    time_iterations_labels = [f"{time}ms : {iterations}" for time, iterations in zip(csv1time["Index"], csv1it["Index"])]
+    plt.xticks(csv1time["Index"], time_iterations_labels, rotation=45)
 
     plt.tight_layout()
-    plt.savefig("avg_regret_vs_anytime_vs_time_csv.png")
-    plt.clf()  # Clear the current figure
+    plt.savefig("avg_regret_vs_anytime_vs_relative_iter_csv_overlapped.png")
+    plt.show()
+
+
+    # plt.figure(figsize=(10, 10))
+
+    # # Plotting Avg Regret vs Iteration/Time for CSV 1
+    # plt.figure(figsize=(10, 10))
+
+    # # # Plotting Avg Regret vs Iteration for CSV 1
+    # plt.subplot(2, 1, 1)
+    # plt.plot(csv1it["Index"], csv1it["Avg Regret"], label="Iteration Budget", marker='o')
+    # plt.axhline(y=0, color='r', linestyle='--')  # Add horizontal line at y=0
+    # plt.xlabel("Time Budget (milliseconds)")
+    # plt.ylabel("Avg Regret")
+    # plt.title("Avg Regret vs Time Budget (AnyTime Sequential Halving)")
+    # plt.legend()
+    # plt.xlim(csv1it["Index"].min(), csv1it["Index"].max())  # Set x-axis limits based on CSV 1 data
+
+    # # Plotting Avg Regret vs Time for CSV 1
+    # plt.subplot(2, 1, 2)
+    # plt.plot(csv1time["Index"], csv1time["Avg Regret"], label="Iterations", marker='o')
+    # plt.axhline(y=0, color='r', linestyle='--')  # Add horizontal line at y=0
+    # plt.xlabel("Iteration Budget (milliseconds)")
+    # plt.ylabel("Avg Regret")
+    # plt.title("Avg Regret vs Time-Relative Iteration Budget (Base Sequential Halving - Version 1)")
+    # plt.legend()
+    # plt.xlim(csv1time["Index"].min(), csv1time["Index"].max())  # Set x-axis limits based on CSV 1 data
+
+    # plt.tight_layout()
+    # plt.savefig("avg_regret_vs_anytime_vs_relative_iter_csv.png")
+    # # plt.clf()  # Clear the current figure
 
     # # Plotting Std Regret vs Iteration/Time for CSV 1
     # plt.figure(figsize=(10, 10))
@@ -469,16 +525,39 @@ if __name__ == "__main__":
     # plt.clf()  # Clear the current figure
         
    
+    """
+    
+    ms - iterations
+    500ms - 18500
+    1000ms - 37000
+    1500ms - 55500
+    2000ms - 73000
+    2500ms - 93000
+    3000ms - 112500
+    3500ms - 131000
+    4000ms - 150500
+    4500ms - 167500
+    5000ms - 186500
+    
+
+    
+    """
     
     
-    num_arms = 10
-    means_amt = 100
-    iterations = 1000
-    arm_means_idx = 5
+    # num_arms = 10
+    # means_amt = 100
+    # iterations = 60000
+    # arm_means_idx = 5
+    # times = range(500,5500,500)
+    # iters = [18500, 37000, 55500, 73000, 93000, 112500, 131000, 150500, 167500, 186500]
+    # time_budget_ms = 1000
 
-    time_budget_ms = 1000
+    # mab_exp_runner = MAB_Experiment_runner(num_arms, means_amt)
+    # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="iteration", iteration_range=iters)
+    # mab_exp_runner.run_sh_base_experiment(190000, 5)
+    # time_dict = mab_exp_runner.get_base_sh_times(times, range(16000, 190500, 500))
 
-    mab_exp_runner = MAB_Experiment_runner(num_arms, means_amt)
+    # print(time_dict)
     # hist = mab_exp_runner.run_sh_anytime_experiment(time_budget_ms, arm_means_idx)
     # print(hist)
     # mab_exp_runner.plot_sh_experiment(hist,arm_means_idx,time_budget=time_budget_ms,type="anytime")
@@ -488,7 +567,7 @@ if __name__ == "__main__":
     # # # # mab_exp_runner.run_regret_and_edit_distance_experiment(algo_type="iteration", iterations=iterations)
     # # # mab_exp_runner.run_regret_and_edit_distance_experiment(algo_type="time", time_budget_ms=1000)
 
-    # times = range(500,5500,500)
+    
     # # # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="time", time_range=times)
     # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="anytime", time_range=times)
     # # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="iteration", iteration_range=[100,500,1000,5000,10000])
