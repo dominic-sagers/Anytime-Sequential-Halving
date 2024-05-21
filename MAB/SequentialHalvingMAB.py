@@ -487,22 +487,24 @@ class UCB1:
   The UCB1 algorithm.
   """
 
-  def __init__(self, C: float):
+  def __init__(self, C: float, numarms, time_budget):
     """
     :param C: The exploration parameter C.
     """
+    self.numarms = numarms
+    self.stop_time = int(round(time.time() * 1000)) + time_budget
     self.C = C
     self.t = 0
-    self.num_pulls = [0 for _ in range(k)]
-    self.avg_rewards = np.zeros(k)
+    self.num_pulls = [0 for _ in range(numarms)]
+    self.avg_rewards = np.zeros(numarms)
 
   def reset(self) -> None:
     """
     Reset all memory.
     """
     self.t = 0
-    self.num_pulls = [0 for _ in range(k)]
-    self.avg_rewards = np.zeros(k)
+    self.num_pulls = [0 for _ in range(self.numarms)]
+    self.avg_rewards = np.zeros(self.numarms)
 
   def choose_arm(self) -> int:
     """
@@ -510,13 +512,13 @@ class UCB1:
     """
     self.t = self.t + 1
     ucbs = np.copy(self.avg_rewards)
-    log_t = log(self.t)
+    log_t = math.log(self.t)
 
-    for i in range(k):
+    for i in range(self.numarms):
       if self.num_pulls[i] == 0:
         ucbs[i] = np.inf
       else:
-        ucbs[i] = ucbs[i] + self.C * sqrt(log_t / self.num_pulls[i])
+        ucbs[i] = ucbs[i] + self.C * math.sqrt(log_t / self.num_pulls[i])
 
     return np.argmax(ucbs)
 
