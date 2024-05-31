@@ -40,7 +40,7 @@ public class LaunchLudii
 		if (!AIRegistry.registerAI("SHUCTTime", () -> {return new SHUCTTime();}, (game) -> {return new SHUCTTime().supportsGame(game);}))
 		System.err.println("WARNING! Failed to register AI because one with that name already existed!");
 
-		if (!AIRegistry.registerAI("SHUCTAnyTime", () -> {return new SHUCTAnyTime();}, (game) -> {return new SHUCTAnyTime().supportsGame(game);}))
+		if (!AIRegistry.registerAI("SHUCTAnyTime", () -> {return new SHUCTAnyTime(true, -1);}, (game) -> {return new SHUCTAnyTime(true, -1).supportsGame(game);}))
 		System.err.println("WARNING! Failed to register AI because one with that name already existed!");
 
 		// Run Ludii

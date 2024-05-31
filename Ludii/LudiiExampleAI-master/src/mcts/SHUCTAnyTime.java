@@ -31,15 +31,36 @@ public class SHUCTAnyTime extends AI
 	
 	/** Our player index */
 	protected int player = -1;
+	public boolean iterMode;
+	public int totalIterations;
+	public int iterBudget = -1;
 	
 	//-------------------------------------------------------------------------
 	//Necessary variables for the SH algorithm.
 	/**
 	 * Constructor
 	 */
-	public SHUCTAnyTime()
+	public SHUCTAnyTime(boolean iterMode, int iterBudget)
 	{
 		this.friendlyName = "SHUCTAnyTime";
+		this.iterMode = iterMode;
+		if(iterMode){
+			this.iterBudget = iterBudget;
+		}
+		
+	}
+	
+	public boolean stopConditionMet(long stopTime, int iterationBudget){
+		if(this.iterMode == true){
+			if(this.totalIterations < iterationBudget){
+				return false;
+			}
+		}else{
+			if(System.currentTimeMillis() < stopTime){
+				return false;
+			}
+		}
+		return true;	
 	}
 	
 
@@ -76,7 +97,7 @@ public class SHUCTAnyTime extends AI
 	 * 
 	 */
 	//-------------------------------------------------------------------------
-
+	
 	@Override
 	public Move selectAction
 	(
@@ -93,7 +114,15 @@ public class SHUCTAnyTime extends AI
 		final Node root = new Node(null, null, context);
 		
 		// We'll respect any limitations on max seconds and max iterations (don't care about max depth)
+		int iterationBudgetMultiplier = 1000;
+		int iterationBudget;
+		if(this.iterBudget == -1){
+			iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
+		}else{
+			iterationBudget = this.iterBudget;
+		}
 		
+
 		
 		// this.timeBudget = Double.valueOf(maxSeconds).intValue();
 		final long stopTime = (maxSeconds > 0.0) ? System.currentTimeMillis() + (long) (maxSeconds * 1000L) : Long.MAX_VALUE;
@@ -106,6 +135,9 @@ public class SHUCTAnyTime extends AI
 		int numPossibleMoves = root.unexpandedMoves.size();
 		Node currentChild;
 		int armVisitCount = 0;
+		
+
+
 		
 		ArrayList<Integer> currentChildrenIdx = new ArrayList<Integer>();//A list containing the indexes of the nodes we are searching from root.children
 		for(int i = 0; i < root.children.size();i++){
@@ -122,8 +154,7 @@ public class SHUCTAnyTime extends AI
 		//System.currentTimeMillis() < stopTime && 
 		while 
 		(
-			System.currentTimeMillis() < stopTime && 					// Respect iteration limit
-				// Respect time limit
+			!this.stopConditionMet(stopTime, iterationBudget) &&					
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
 		{
@@ -188,6 +219,8 @@ public class SHUCTAnyTime extends AI
 				
 				rootNodesVisited++;
 				armVisitCount++;
+				this.totalIterations++;
+
 				if(rootNodesVisited == numPossibleMoves){
 					//System.out.println("First round over");
 					firstRound = true;
@@ -257,6 +290,7 @@ public class SHUCTAnyTime extends AI
 
 				hist.add(currentChildrenIdx.get(idx));
 				armVisitCount++;
+				this.totalIterations++;
 				idx++;
 
 			}
@@ -289,7 +323,9 @@ public class SHUCTAnyTime extends AI
 
 	
 		// Return the move we wish to play
-		displayHist(hist, this);
+		// displayHist(hist, this);
+		// System.out.println("Iterations made: " + this.totalIterations);
+		this.totalIterations = 0;
 		//System.out.println(hist.toString());
 		return finalMoveSelection(root);
 	}

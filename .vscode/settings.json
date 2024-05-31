@@ -1,6 +1,9 @@
 {
     "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "Ludii/Ludii-1.3.12.jar"
-    ]
+        "Ludii\\LudiiExampleAI-master\\lib\\Ludii-1.3.12.jar"
+    ],
+    "java.project.sourcePaths": [
+        "Ludii\\LudiiExampleAI-master\\src"
+    ],
+    "java.project.outputPath": ["bin"]
 }
