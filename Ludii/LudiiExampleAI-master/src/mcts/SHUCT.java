@@ -285,7 +285,7 @@ public class SHUCT extends AI
 		
 		// Return the move we wish to play
 		
-		displayHist(hist, this);
+		//displayHist(hist, this);
 		//System.out.println(hist.toString());
 		
 		return finalMoveSelection(root);
