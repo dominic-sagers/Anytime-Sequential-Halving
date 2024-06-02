@@ -62,10 +62,7 @@
     "drawSlashEdges": false,
     "RecentGames_7": "1D Chess",
     "drawCornersCells": false,
-    "OptionStrings": [
-        "Board/Square",
-        "Board Size/8x8"
-    ],
+    "OptionStrings": [],
     "drawLeftEdges": false,
     "drawAngledEdges": false,
     "RecentGames_0": "Breakthrough",
@@ -133,7 +130,7 @@
     "drawPerimeterCells": false,
     "AI_2": {
         "AI": {"algorithm": "SHUCTAnyTime"},
-        "constructor": "main.LaunchLudii$$Lambda/0x0000027401008c90@2b8004bc"
+        "constructor": "main.LaunchLudii$$Lambda/0x0000023fd7008c90@3bd4a465"
     },
     "ShowLastMove": false,
     "NoRepetitionWithinTurn": false,
@@ -153,9 +150,9 @@
     "tabFontSize": 13,
     "ShowCellIndices": false,
     "drawPerimeterEdges": false,
-    "FrameLocX": -1603,
+    "FrameLocX": 312,
     "AnimationVisualsType": "None",
-    "FrameLocY": 24,
+    "FrameLocY": 114,
     "networkRefresh": false,
     "editorParseText": true,
     "TickLength": 0.1,
