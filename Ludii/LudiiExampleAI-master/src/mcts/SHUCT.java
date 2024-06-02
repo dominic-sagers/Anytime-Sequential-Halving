@@ -173,7 +173,7 @@ public class SHUCT extends AI
 			this.halvingIterations += 1;
 			if(rootNodesVisited == numPossibleMoves){
 				//System.out.println("Root expansion over");
-				System.out.println(rootNodesVisited);
+				//System.out.println(rootNodesVisited);
 				rootFullyExpanded = true;
 			}
 
