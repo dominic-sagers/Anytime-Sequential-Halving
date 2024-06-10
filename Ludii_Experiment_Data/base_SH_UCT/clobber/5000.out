@@ -1,0 +1,21 @@
+Warming up...
+Finished warming up!
+=====================================================
+Completed 1 games.
+
+Agent 1 (SHUCT)
+Winning score (between 0 and 1) : N=1, mean=1 (+/-0).
+P1: N=1, mean=1 (+/-0).
+P2: N=0, mean=0 (+/-0).
+Game Durations: N=1, mean=33 (+/-0).
+P1: N=1, mean=33 (+/-0).
+P2: N=0, mean=0 (+/-0).
+
+Agent 2 (UCT)
+Winning score (between 0 and 1) : N=1, mean=0 (+/-0).
+P1: N=0, mean=0 (+/-0).
+P2: N=1, mean=0 (+/-0).
+Game Durations: N=1, mean=33 (+/-0).
+P1: N=0, mean=0 (+/-0).
+P2: N=1, mean=33 (+/-0).
+=====================================================

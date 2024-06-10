@@ -319,11 +319,9 @@ class MAB_Experiment_runner:
                         algo.observe_reward(arm, reward)
                     
                     
-                    keys = algo.total_means.keys()
-                    max_val = -1
-                    for key in keys:
-                        if algo.total_means.get(key) > max_val:
-                            max_val = algo.total_means.get(key)
+                   
+                    max_val = np.max(algo.avg_rewards)
+                    
                             
                     # print("\n******************")
                     # print(true_means)
@@ -334,14 +332,14 @@ class MAB_Experiment_runner:
                     # print("******************\n")
                     regrets.append(self.get_regret(true_means, max_val))
                     
-                    edit_distances.append(self.get_edit_distance(true_means, algo.total_rewards))
+                    #edit_distances.append(self.get_edit_distance(true_means, algo.avg_rewards))
 
                     #print(t)
                 
                 avg_regret = sum(regrets) / len(regrets)
                 std_regret = np.std(regrets)
-                avg_edit_distance = sum(edit_distances) / len(edit_distances)
-                std_edit_distance = np.std(edit_distances)
+                avg_edit_distance = -1
+                std_edit_distance = -1
                             
                     
   #  start_time = int(round(time.time() * 1000)) 
@@ -425,7 +423,7 @@ class MAB_Experiment_runner:
             if algo_type == "iteration":
                 for i, r in enumerate(iteration_range):
                     writer.writerow([r, avg_regret_list[i], std_regret_list[i], avg_edit_distance_list[i], std_edit_distance_list[i]])
-            elif algo_type == "time" or algo_type == "anytime":
+            elif algo_type == "time" or algo_type == "anytime" or algo_type == "ucb":
                 for i, r in enumerate(time_range):
                     writer.writerow([r, avg_regret_list[i], std_regret_list[i], avg_edit_distance_list[i], std_edit_distance_list[i]])
         
@@ -472,42 +470,70 @@ if __name__ == "__main__":
     # csv1time = pd.read_csv("time_regret_edit_distance.csv")
 
 
-  # Read the CSV files
-    # csv1it = pd.read_csv("anytime_regret_edit_distance.csv")
-    # csv1time = pd.read_csv("iteration_regret_edit_distance_time_relative.csv")
+  #Read the CSV files
+    csvanytime = pd.read_csv("anytime_regret_edit_distance.csv")
+    csviter = pd.read_csv("iteration_regret_edit_distance_time_relative.csv")
+    csvucb = pd.read_csv("ucb_regret_edit_distance.csv")
+    csvtime = pd.read_csv("time_regret_edit_distance.csv")
+    
 
-    # plt.figure(figsize=(8, 5))
+    a = csvanytime
+    b = csvtime
+    c = csviter
+    d = csvucb
+    
+    plt.figure(figsize=(8, 5))
 
-    # # Plotting Avg Regret vs Time for both datasets
+    # Plotting Avg Regret vs Time for both datasets
     # plt.plot(csv1time["Index"], csv1time["Avg Regret"], label="Base SH", marker='x')
     # plt.plot(csv1time["Index"], csv1it["Avg Regret"], label="Anytime SH", marker='x')
+    plt.plot(a["Index"], a["Avg Regret"], label="Anytime SH", marker='o')
+    plt.plot(a["Index"], b["Avg Regret"], label="Time SH", marker='^')
+    plt.plot(a["Index"], c["Avg Regret"], label="Base SH", marker='x')
+    plt.plot(a["Index"], d["Avg Regret"], label="UCB1", marker='v')
+    
+    firstConf = 1.96*(a["Std Regret"]/(math.sqrt(100)))
+    plt.fill_between(a["Index"],
+                    a["Avg Regret"] - firstConf,
+                    a["Avg Regret"] + firstConf,
+                    color='blue', alpha=0.2)
 
-    # # Shading the area between the confidence intervals for Base SH
-    # plt.fill_between(csv1time["Index"],
-    #                 csv1time["Avg Regret"] - csv1time["Std Regret"],
-    #                 csv1time["Avg Regret"] + csv1time["Std Regret"],
-    #                 color='blue', alpha=0.2)
+    
+    secondConf = 1.96*(b["Std Regret"]/(math.sqrt(100)))
+    plt.fill_between(a["Index"],
+                    b["Avg Regret"] - secondConf,
+                    b["Avg Regret"] + secondConf,
+                    color='orange', alpha=0.2)
+    
+    thirdConf = 1.96*(c["Std Regret"]/(math.sqrt(100)))
+    plt.fill_between(a["Index"],
+                    c["Avg Regret"] - thirdConf,
+                    c["Avg Regret"] + thirdConf,
+                    color='green', alpha=0.2)
 
-    # # Shading the area between the confidence intervals for Anytime SH
-    # plt.fill_between(csv1time["Index"],
-    #                 csv1it["Avg Regret"] - csv1it["Std Regret"],
-    #                 csv1it["Avg Regret"] + csv1it["Std Regret"],
-    #                 color='orange', alpha=0.2)
+    
+    fourthConf = 1.96*(d["Std Regret"]/(math.sqrt(100)))
+    plt.fill_between(a["Index"],
+                    d["Avg Regret"] - fourthConf,
+                    d["Avg Regret"] + fourthConf,
+                    color='salmon', alpha=0.2)
 
-    # plt.axhline(y=0, color='r', linestyle='--')  # Add horizontal line at y=0
+    plt.axhline(y=0, color='r', linestyle='--')  # Add horizontal line at y=0
 
-    # plt.xlabel("Time (milliseconds) : Iterations")
-    # plt.ylabel("Avg Simple Regret")
+    plt.xlabel("Time (milliseconds) : Iterations")
+    plt.ylabel("Avg Simple Regret")
     # plt.title("Anytime Sequential Halving vs Base Sequential Halving (Time-Iteration-Relative)")
-    # plt.legend()
+    plt.legend()
 
-    # # Adjust x-axis labels to show time and corresponding iterations
-    # time_iterations_labels = [f"{time} : {iteration}" for time, iteration in zip(csv1time["Index"], csv1it["Index"])]
-    # plt.xticks(csv1time["Index"], time_iterations_labels, rotation=45, ha='right')
+    # Adjust x-axis labels to show time and corresponding iterations
+    # time_iterations_labels = [f"{time}" for time in a["Index"]]
+    time_iterations_labels = [f"{time} : {iterations}" for time, iterations in zip(a["Index"], c["Index"])]
+    plt.xticks(a["Index"], time_iterations_labels, rotation=45, ha='right')
+    
 
-    # plt.tight_layout()
-    # plt.savefig("avg_regret_vs_anytime_vs_relative_iter_csv_overlapped_with_shaded_ci.png")
-    # plt.show()
+    plt.tight_layout()
+    plt.savefig("avg_regret_all_algorithms_overlapped_with_shaded_ci.png")
+    plt.show()
 
     # plt.figure(figsize=(8, 5))
 
@@ -689,17 +715,17 @@ if __name__ == "__main__":
     """
     
     
-    num_arms = 10
-    means_amt = 100
-    # iterations = 60000
-    # arm_means_idx = 5
-    times = range(500,5500,500)
-    iters = [18500, 37000, 55500, 73000, 93000, 112500, 131000, 150500, 167500, 186500]
-    time_budget_ms = 1000
+    # num_arms = 10
+    # means_amt = 100
+    # # iterations = 60000
+    # # arm_means_idx = 5
+    # times = range(500,5500,500)
+    # iters = [18500, 37000, 55500, 73000, 93000, 112500, 131000, 150500, 167500, 186500]
+    # time_budget_ms = 1000
 
-    mab_exp_runner = MAB_Experiment_runner(num_arms, means_amt)
-    mab_exp_runner.make_csv_edit_regret_experiment(algo_type="ucb", time_range=times)
-    # mab_exp_runner.run_sh_base_experiment(190000, 5)
+    # mab_exp_runner = MAB_Experiment_runner(num_arms, means_amt)
+    # mab_exp_runner.make_csv_edit_regret_experiment(algo_type="ucb", time_range=times)
+    # # mab_exp_runner.run_sh_base_experiment(190000, 5)
     # time_dict = mab_exp_runner.get_base_sh_times(times, range(16000, 190500, 500))
 
     # print(time_dict)

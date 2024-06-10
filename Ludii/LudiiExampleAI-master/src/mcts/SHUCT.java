@@ -33,17 +33,19 @@ public class SHUCT extends AI
 	//-------------------------------------------------------------------------
 	//Necessary variables for the SH algorithm.
 	private final int iterationBudgetMultiplier = 1000;
-	private int iterationBudget;//How many iterations we are allotted during this search
+	private int iterationBudget = -1;//How many iterations we are allotted during this search
 	private int rounds;// A reference for the amount of rounds (the amount of times we will halve the tree)
 	private int iterPerRound;//Gives how many iterations should be run before halving from the root.
 	private int halvingIterations;//Tracks the number of inner iterations for halving purposes
 	private int numIterations;// Tracks the number of total iterations for the main loop
+
 	/**
 	 * Constructor
 	 */
-	public SHUCT()
+	public SHUCT(int budget)
 	{
 		this.friendlyName = "SHUCT";//Sequential Halving UCT
+		this.iterationBudget = budget;
 	}
 	
 	//-------------------------------------------------------------------------
@@ -63,9 +65,14 @@ public class SHUCT extends AI
 		// Start out by creating a new root node (no tree reuse in this example)
 		final Node root = new Node(null, null, context);
 		
-		this.iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
-		this.rounds = (int) Math.ceil(Math.log(iterationBudget));
-		this.iterPerRound = (int) Math.ceil(iterationBudget/2);
+		if(this.iterationBudget == -1){
+			this.iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
+		}
+
+
+
+		this.rounds = (int) Math.ceil(Math.log(this.iterationBudget));
+		this.iterPerRound = (int) Math.ceil(this.iterationBudget/2);
 		this.numIterations = 0;
 		this.halvingIterations = 0;
 

@@ -1,0 +1,3 @@
+agents,scores
+"('SHUCT', 'UCT')","(1.0, -1.0)"
+"('UCT', 'SHUCT')","(-0.96, 0.96)"

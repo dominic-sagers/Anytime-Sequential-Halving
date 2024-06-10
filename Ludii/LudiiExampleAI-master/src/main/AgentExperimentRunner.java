@@ -66,6 +66,7 @@ public class AgentExperimentRunner {
 	
 	protected boolean anytimeMode;
 	protected int anytimeBudget;
+	protected int shBudget;
 	
 	/** Strings describing agents to use */
 	protected List<String> agentStrings;
@@ -248,6 +249,12 @@ public class AgentExperimentRunner {
 				.withDefault(Integer.valueOf(1000))
 				.withNumVals(1)
 				.withType(OptionTypes.Int));
+		argParse.addOption(new ArgOption()
+				.withNames("--sh-budget")
+				.help("Iteration budget for the Base SH algorithm.")
+				.withDefault(Integer.valueOf(-1))
+				.withNumVals(1)
+				.withType(OptionTypes.Int));
 		
 		// parse the args
 		if (!argParse.parseArguments(args))
@@ -265,6 +272,7 @@ public class AgentExperimentRunner {
         eval.ruleset = argParse.getValueString("--ruleset");
         eval.anytimeMode = argParse.getValueBool("--anytime-mode");
 		eval.anytimeBudget = argParse.getValueInt("--anytime-budget");
+		eval.shBudget = argParse.getValueInt("--sh-budget");
         eval.agentStrings = (List<String>) argParse.getValue("--agents");
 
         eval.numGames = argParse.getValueInt("-n");
@@ -296,7 +304,7 @@ public class AgentExperimentRunner {
 		for (final String agent : agentStrings)
 		{
             if (agent.equalsIgnoreCase("shuct")) {
-                SHUCT sh = new SHUCT();
+                SHUCT sh = new SHUCT(this.shBudget);
                 ais.add(sh);
             } else if (agent.equalsIgnoreCase("shucttime")) {
                 SHUCTTime shtime = new SHUCTTime();
