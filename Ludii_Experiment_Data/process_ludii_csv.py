@@ -107,7 +107,7 @@ def make_plot(csv_path, agent, file_name):
         plt.fill_between(df['Iterations/Time'], df['Agent2_Mean'] - df['Agent2_Confidence'], df['Agent2_Mean'] + df['Agent2_Confidence'], alpha=0.3)
 
     # Set labels and title
-    plt.xlabel('Iterations')
+    plt.xlabel('Time (milliseconds)')
     plt.ylabel('Win Rate (%)')
     # plt.title('Anytime Sequential Halving Win Rate vs UCT - Pentalath')
     plt.legend()
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     #data = pd.read_csv('C://Users//domin\Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytime_vs_baseSH//clobber//150000//raw_results.csv')
 
 
-    game = "clobber"
+    games = {"Amazons","Breakthrough", "Clobber", "Pentalath"}
     # paths = {f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//base_SH_UCT//{game}//150000//raw_results.csv',
     #          f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//base_SH_UCT//{game}//100000//raw_results.csv',
              
@@ -138,26 +138,31 @@ if __name__ == "__main__":
     
     
     
-    # # paths = {'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//pentalath//20000//raw_results.csv',
-    # #         'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//pentalath//15000//raw_results.csv',
-    # #         'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//pentalath//10000//raw_results.csv',
-    # #         'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//pentalath//5000//raw_results.csv',
-    # #         'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//pentalath//1000//raw_results.csv'}
+    # paths = {f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//base_SH_UCT//{game}//50000//raw_results.csv',
+    #         f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//base_SH_UCT//{game}//10000//raw_results.csv',
+    #         f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//base_SH_UCT//{game}//5000//raw_results.csv',
+    #         f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//base_SH_UCT//{game}//1000//raw_results.csv'}
     
    
-    # # # make_results_dataframe_csv(paths, game, [20000,15000, 10000, 5000,1000])
-    # make_results_dataframe_csv(paths, game, [150000,10000,1000])
+    # # make_results_dataframe_csv(paths, game, [10000, 5000,1000])
+    # make_results_dataframe_csv(paths, game, [50000, 10000, 5000, 1000])
+    # csv_path = f'Ludii_Experiment_Data//{game}_SHUCT_UCT_results_dataframe.csv'
+    # agent = 1
 
-    
-    
-    csv_path = f'Ludii_Experiment_Data//base_SH_UCT//{game}//clobber_SHUCT_UCT_results_dataframe.csv'
-    agent = 1
-    
-    
-    file_name = f"SHUCT vs UCT - {game}.png"
-    make_plot(csv_path, agent, file_name)
 
-    
+    # file_name = f"SHUCT vs UCT - {game}.png"
+    # make_plot(csv_path, agent, file_name)
+
+    for game in games:
+        
+        csv_path = f'Ludii_Experiment_Data//{game}_UCT_SHUCTAnyTime_results_dataframe.csv'
+        agent = 2
+
+
+        file_name = f"Anytime vs UCT - {game}.png"
+        make_plot(csv_path, agent, file_name)
+
+
    
 
 
