@@ -1,0 +1,40 @@
+Parsing args failed on token "---anytime-mode" with exception:
+java.lang.NumberFormatException: For input string: "---anytime-mode"
+	at java.base/java.lang.NumberFormatException.forInputString(NumberFormatException.java:67)
+	at java.base/java.lang.Integer.parseInt(Integer.java:588)
+	at java.base/java.lang.Integer.parseInt(Integer.java:685)
+	at main.CommandLineArgParse.tokenToVal(CommandLineArgParse.java:754)
+	at main.CommandLineArgParse.parseArguments(CommandLineArgParse.java:318)
+	at main.AgentExperimentRunner.parseArgs(AgentExperimentRunner.java:260)
+	at main.AgentExperimentRunner.main(AgentExperimentRunner.java:357)
+
+Evaluate playing strength of different agents against each other.
+
+Required named arguments:
+
+Optional named arguments:
+ -h, --help                                                      Show this help message.
+ --game GAME                                                     Name of the game to play. Should end with ".lud".
+ --game-options [ GAME_OPTIONS_* ... ]                           Game Options to load.
+ --ruleset RULESET                                               Ruleset to compile.
+ --agents AGENTS_1 [ AGENTS_* ... ]                              Agents which should be evaluated
+ -n, --num-games, --num-eval-games N                             Number of training games to run.
+ --game-length-cap, --max-num-actions GAME_LENGTH_CAP            Maximum number of actions that may be taken before a game is terminated as a draw (-1 for no limit).
+ --thinking-time, --time, --seconds THINKING_TIME                Max allowed thinking time per move (in seconds).
+ --iteration-limit, --iterations ITERATION_LIMIT                 Max allowed number of MCTS iterations per move.
+ --depth-limit DEPTH_LIMIT                                       Max allowed search depth per move (for e.g. alpha-beta).
+ --no-rotate-agents                                              Don't rotate through possible assignments of agents to Player IDs.
+ --warming-up-secs WARMING_UP_SECS                               Number of seconds for which to warm up JVM.
+ --round-to-next-permutations-divisor                            Increase number of games to play to next number that can be divided by number of permutations of agents.
+ --out-dir, --output-directory OUT_DIR                           Filepath for output directory
+ --output-summary                                                Output summary of results.
+ --output-alpha-rank-data                                        Output data for alpha-rank.
+ --output-raw-results                                            Output all raw results.
+ --no-print-out                                                  Suppress general prints to System.out.
+ --suppress-divisor-warning                                      Suppress warning about number of trials not being divisible by number of permutations of agents.
+ --useGUI                                                        Whether to create a small GUI that can be used to manually interrupt training run. False by default.
+ --max-wall-time MAX_WALL_TIME                                   Max wall time in minutes (or -1 for no limit).
+ --anytime-mode ANYTIME_MODE                                     True sets anytimeSH to iteration budget, false to time budget
+ --anytime-budget ANYTIME_BUDGET                                 Iteration budget for the AnytimeSH algorithm.
+ --sh-budget SH_BUDGET                                           Iteration budget for the Base SH algorithm.
+

@@ -99,7 +99,7 @@ def make_plot(csv_path, agent, file_name):
 
     if agent == 1:
         # Plot Agent 1's mean with shaded region for confidence interval
-        plt.plot(df['Iterations/Time'], df['Agent1_Mean'], label=df['Agent1'].iloc[0], marker='o')
+        plt.plot(df['Iterations/Time'], df['Agent1_Mean'], label="Anytime SH", marker='o')
         plt.fill_between(df['Iterations/Time'], df['Agent1_Mean'] - df['Agent1_Confidence'], df['Agent1_Mean'] + df['Agent1_Confidence'], alpha=0.3)
     elif agent == 2:
         # # Plot Agent 2's mean with shaded region for confidence interval
@@ -107,7 +107,7 @@ def make_plot(csv_path, agent, file_name):
         plt.fill_between(df['Iterations/Time'], df['Agent2_Mean'] - df['Agent2_Confidence'], df['Agent2_Mean'] + df['Agent2_Confidence'], alpha=0.3)
 
     # Set labels and title
-    plt.xlabel('Time (milliseconds)')
+    plt.xlabel('Iterations')
     plt.ylabel('Win Rate (%)')
     # plt.title('Anytime Sequential Halving Win Rate vs UCT - Pentalath')
     plt.legend()
@@ -122,12 +122,65 @@ def make_plot(csv_path, agent, file_name):
     plt.savefig(file_name)
     plt.show()
 
+def make_doubleplot_plot(csv_path1, csv_path2, agent_num1, agent1_name, agent_num2, agent2_name, opponent, game):
+    df1 = pd.read_csv(csv_path1)
+    df2 = pd.read_csv(csv_path2)
+    # Convert means and confidence intervals to percentages
+    df1['Agent1_Mean'] *= 100
+    df1['Agent1_Confidence'] *= 100
+    df1['Agent2_Mean'] *= 100
+    df1['Agent2_Confidence'] *= 100
+
+    # Convert means and confidence intervals to percentages
+    df2['Agent1_Mean'] *= 100
+    df2['Agent1_Confidence'] *= 100
+    df2['Agent2_Mean'] *= 100
+    df2['Agent2_Confidence'] *= 100
+    # Plotting
+    plt.figure(figsize=(10, 6))
+
+    #If agentnum is 1 or if agent num is 2, plot differently
+    if agent_num1 == 1:
+        # Plot Agent 1's mean with shaded region for confidence interval
+        plt.plot(df1['Iterations/Time'], df1['Agent1_Mean'], label=agent1_name, marker='o')
+        plt.fill_between(df1['Iterations/Time'], df1['Agent1_Mean'] - df1['Agent1_Confidence'], df1['Agent1_Mean'] + df1['Agent1_Confidence'], alpha=0.3)
+    elif agent_num1 == 2:
+        # # Plot Agent 2's mean with shaded region for confidence interval
+        plt.plot(df1['Iterations/Time'], df1['Agent2_Mean'], label=agent1_name, marker='o')
+        plt.fill_between(df1['Iterations/Time'], df1['Agent2_Mean'] - df1['Agent2_Confidence'], df1['Agent2_Mean'] + df1['Agent2_Confidence'], alpha=0.3)
+
+    if agent_num2 == 1:
+        # Plot Agent 1's mean with shaded region for confidence interval
+        plt.plot(df2['Iterations/Time'], df2['Agent1_Mean'], label=agent2_name, marker='o')
+        plt.fill_between(df2['Iterations/Time'], df2['Agent1_Mean'] - df2['Agent1_Confidence'], df2['Agent1_Mean'] + df2['Agent1_Confidence'], alpha=0.3)
+    elif agent_num2 == 2:
+        # # Plot Agent 2's mean with shaded region for confidence interval
+        plt.plot(df2['Iterations/Time'], df2['Agent2_Mean'], label=agent2_name, marker='o')
+        plt.fill_between(df2['Iterations/Time'], df2['Agent2_Mean'] - df2['Agent2_Confidence'], df2['Agent2_Mean'] + df2['Agent2_Confidence'], alpha=0.3)
+
+    # Set labels and title
+    plt.xlabel('Iterations')
+    plt.ylabel('Win Rate (%)')
+
+    plt.legend()
+
+    # Set y-axis limits to 0-100%
+    plt.ylim(0, 100)
+
+    # Increase the resolution of the y-axis tick marks
+    plt.yticks(range(0, 101, 5))  # Tick marks every 5%
+
+    # Show plot
+    plt.savefig(f"{agent1_name} and {agent2_name} vs {opponent} - {game}.png")
+    plt.show()
+
 
 if __name__ == "__main__":
     #data = pd.read_csv('C://Users//domin\Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytime_vs_baseSH//clobber//150000//raw_results.csv')
 
 
-    games = {"Amazons","Breakthrough", "Clobber", "Pentalath"}
+    games = {"breakthrough", "pentalath"}
+
     # paths = {f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//base_SH_UCT//{game}//150000//raw_results.csv',
     #          f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//base_SH_UCT//{game}//100000//raw_results.csv',
              
@@ -149,20 +202,52 @@ if __name__ == "__main__":
     # csv_path = f'Ludii_Experiment_Data//{game}_SHUCT_UCT_results_dataframe.csv'
     # agent = 1
 
+    # for game in games:
+    #     paths = {f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//{game}//50000//raw_results.csv',
+    #         f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//{game}//10000//raw_results.csv',
+    #         f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//{game}//5000//raw_results.csv',
+    #         f'C://Users//domin//Documents//UM//Thesis//Code//Sequential-Halving-With-Time-Constraints-In-Ludii//Ludii_Experiment_Data//anytimeSH_UCT//{game}//1000//raw_results.csv'}
+        
+    #     make_results_dataframe_csv(paths, game, [50000, 10000, 5000, 1000])
+    
 
     # file_name = f"SHUCT vs UCT - {game}.png"
     # make_plot(csv_path, agent, file_name)
 
-    for game in games:
+    # for game in games:
         
-        csv_path = f'Ludii_Experiment_Data//{game}_UCT_SHUCTAnyTime_results_dataframe.csv'
-        agent = 2
+    #     csv_path = f'Ludii_Experiment_Data//{game}_SHUCT_UCT_results_dataframe.csv'
+    #     agent = 2
+
+    #     file_name = f"UCT vs HMCTS (Opponent-Plot) - {game}.png"
+    #     make_plot(csv_path, agent, file_name)
+
+    # for game in games:
+    #         #pentalath_SHUCTAnyTime_SHUCT_results_dataframe
+    #         csv_path = f'Ludii_Experiment_Data//{game}_SHUCTAnyTime_SHUCT_results_dataframe.csv'
+    #         agent = 1
 
 
-        file_name = f"Anytime vs UCT - {game}.png"
-        make_plot(csv_path, agent, file_name)
+    #         file_name = f"Anytime SH vs HMCTS (Opponent-Plot) - {game}.png"
+    #         make_plot(csv_path, agent, file_name)
+    
+    for game in games:
+        #pentalath_SHUCTAnyTime_SHUCT_results_dataframe
+        csv_path1 = f'Ludii_Experiment_Data//anytimeSH_baseSH//{game}_SHUCTAnyTime_SHUCT_results_dataframe.csv'
+        agent1_name = "Anytime SH"
+        agent1_num = 1
+                
+        csv_path2 = f'Ludii_Experiment_Data//base_SH_UCT//{game}_SHUCT_UCT_results_dataframe.csv'
+        agent2_name = "UCT"
+        agent2_num = 2
 
+        opp = "H-MCTS"
+        make_doubleplot_plot(csv_path1, csv_path2, agent1_num, agent1_name,agent2_num, agent2_name, opp, game)
 
+    
+    
+    
+    
    
 
 
