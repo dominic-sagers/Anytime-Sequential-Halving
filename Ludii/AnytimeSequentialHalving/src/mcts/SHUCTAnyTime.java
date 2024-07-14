@@ -116,9 +116,12 @@ public class SHUCTAnyTime extends AI
 		// We'll respect any limitations on max seconds and max iterations (don't care about max depth)
 		int iterationBudgetMultiplier = 1000;
 		int iterationBudget;
-		if(this.iterBudget == -1){
+		if (this.iterBudget == -1)
+		{
 			iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
-		}else{
+		}
+		else
+		{
 			iterationBudget = this.iterBudget;
 		}
 		
@@ -129,7 +132,7 @@ public class SHUCTAnyTime extends AI
 
 
 		// Our main loop through MCTS iterations
-		ArrayList<Integer> hist = new ArrayList<>();
+		//ArrayList<Integer> hist = new ArrayList<>();
 		boolean rootFullyExpanded = false;
 		boolean firstRound = true;
 		int numPossibleMoves = root.unexpandedMoves.size();
@@ -140,7 +143,8 @@ public class SHUCTAnyTime extends AI
 
 		
 		ArrayList<Integer> currentChildrenIdx = new ArrayList<Integer>();//A list containing the indexes of the nodes we are searching from root.children
-		for(int i = 0; i < root.children.size();i++){
+		for (int i = 0; i < root.children.size(); i++)
+		{
 			currentChildrenIdx.add(i);
 		}
 
@@ -160,7 +164,8 @@ public class SHUCTAnyTime extends AI
 		{
 
 			// Start in root node
-			if(!rootFullyExpanded){
+			if (!rootFullyExpanded)
+			{
 				//System.out.println("starting root search");
 				//System.out.println(rootNodesVisited);
 
@@ -221,7 +226,8 @@ public class SHUCTAnyTime extends AI
 				armVisitCount++;
 				this.totalIterations++;
 
-				if(rootNodesVisited == numPossibleMoves){
+				if (rootNodesVisited == numPossibleMoves)
+				{
 					//System.out.println("First round over");
 					firstRound = true;
 					rootFullyExpanded = true;
@@ -230,13 +236,15 @@ public class SHUCTAnyTime extends AI
 				
 				
 
-			}else{
+			}
+			else 
+			{
 				currentChild = root.children.get(currentChildrenIdx.get(idx));
 				
 				Node current = currentChild;
 							
-					// Traverse tree
-					while (true)
+				// Traverse tree
+				while (true)
 				{
 					if (current.context.trial().over())
 					{
@@ -288,16 +296,18 @@ public class SHUCTAnyTime extends AI
 				
 				// Increment iteration counts
 
-				hist.add(currentChildrenIdx.get(idx));
+				//hist.add(currentChildrenIdx.get(idx));
 				armVisitCount++;
 				this.totalIterations++;
 				idx++;
 
 			}
 
-			if(armVisitCount == numPossibleMoves){//if we have visited the all children before halving
+			if (armVisitCount == numPossibleMoves)
+			{ //if we have visited the all children before halving
 				armVisitCount = 0;
-				if(currentChildrenIdx.size() <= 2){//if we have visited all children AND we have halved the amount of times required
+				if (currentChildrenIdx.size() <= 2)
+				{ //if we have visited all children AND we have halved the amount of times required
 					currentChildrenIdx = new ArrayList<Integer>();//reset the index list
 
 					for(int i = 0; i < root.children.size();i++){
@@ -306,10 +316,12 @@ public class SHUCTAnyTime extends AI
 
 					idx = 0;
 
-				}else{//We havent finished halving, so we halve based on the current exploit values
+				}
+				else
+				{ //We havent finished halving, so we halve based on the current exploit values
 					//System.out.println("before: " + currentChildrenIdx.toString());
 					currentChildrenIdx = halveRoot(root, currentChildrenIdx);
-					hist.add(999);
+					//hist.add(999);
 					//System.out.println("After: " + currentChildrenIdx.toString());
 					
 					idx = 0;
@@ -337,10 +349,11 @@ public class SHUCTAnyTime extends AI
 		ArrayList<Integer> newIndexes = new ArrayList<>();
 
 		int numChildren = currentChildrenIndexes.size();
-		if(numChildren > 2){
+		if (numChildren > 2)
+		{
 			final int mover = rootNode.context.state().mover();
-			double bestValue = Double.NEGATIVE_INFINITY;
-			final double twoParentLog = 2.0 * Math.log(Math.max(1, rootNode.visitCount));
+			//double bestValue = Double.NEGATIVE_INFINITY;
+			//final double twoParentLog = 2.0 * Math.log(Math.max(1, rootNode.visitCount));
 			//Make a list sorting each child node by value and then take the best half.
 
 			// A list of lists where the first index of the inner list is the node 
@@ -370,12 +383,16 @@ public class SHUCTAnyTime extends AI
 
 			//make a new list which only contains the nodes we want to keep from the tree:
 			double halfSizeTemp = Math.ceil(nodeValues.size() / 2);
-			if(halfSizeTemp < 2){halfSizeTemp = 2;}
+			if (halfSizeTemp < 2)
+			{
+				halfSizeTemp = 2;
+			}
 			int halfSize = Double.valueOf(halfSizeTemp).intValue();
 			ArrayList<ArrayList<Double>> upperHalf = new ArrayList<>(nodeValues.subList(0, halfSize));
 			//System.out.println("Worst nodes, sorted ascending: " + lowerHalf.toString());
 
-			for(int i = 0; i < upperHalf.size();i++){
+			for (int i = 0; i < upperHalf.size();i++)
+			{
 				newIndexes.add(Double.valueOf(upperHalf.get(i).get(0)).intValue());
 			}
 			

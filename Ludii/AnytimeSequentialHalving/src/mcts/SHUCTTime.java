@@ -75,9 +75,9 @@ public class SHUCTTime extends AI
 
 
 		// Our main loop through MCTS iterations
-		ArrayList<Integer> hist = new ArrayList<>();
+		//ArrayList<Integer> hist = new ArrayList<>();
 		boolean rootFullyExpanded = false;
-		boolean firstRound = true;
+		//boolean firstRound = true;
 		int numPossibleMoves = root.unexpandedMoves.size();
 		// System.err.println("possible moves: " + numPossibleMoves);
 		int rootNodesVisited = 0;
@@ -92,108 +92,112 @@ public class SHUCTTime extends AI
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
 		{
-
-		// Start in root node
-		if(!rootFullyExpanded){
-			//System.out.println("starting root search");
-			//System.out.println(rootNodesVisited);
-
-			Node current = root;
-			
-			// Traverse tree
-			while (true)
+			// Start in root node
+			if(!rootFullyExpanded)
 			{
-				if (current.context.trial().over())
-				{
-					// We've reached a terminal state
-					break;
-				}
-				
-				current = select(current);
-				
-				if (current.visitCount == 0)
-				{
-					// We've expanded a new node, time for playout!
-					break;
-				}
-			}
-			
-			Context contextEnd = current.context;
-			
-			if (!contextEnd.trial().over())
-			{
-				// Run a playout if we don't already have a terminal game state in node
-				contextEnd = new Context(contextEnd);
-				game.playout
-				(
-					contextEnd, 
-					null, 
-					-1.0, 
-					null, 
-					0, 
-					200, 
-					ThreadLocalRandom.current()
-				);
-			}
-			
-			// This computes utilities for all players at the of the playout,
-			// which will all be values in [-1.0, 1.0]
-			final double[] utilities = RankUtils.utilities(contextEnd);
-			
-			// Backpropagate utilities through the tree
-			while (current != null)
-			{
-				current.visitCount += 1;
-				for (int p = 1; p <= game.players().count(); ++p)
-				{
-					current.scoreSums[p] += utilities[p];
-				}
-				current = current.parent;
-			}
-			
-			rootNodesVisited++;
-			if(rootNodesVisited == numPossibleMoves){
-				//System.out.println("First round over");
-				firstRound = true;
-				rootFullyExpanded = true;
-			}
+				//System.out.println("starting root search");
+				//System.out.println(rootNodesVisited);
 
-		}else{
-			//Exploring nodes still in List
-				
+				Node current = root;
+
+				// Traverse tree
+				while (true)
+				{
+					if (current.context.trial().over())
+					{
+						// We've reached a terminal state
+						break;
+					}
+
+					current = select(current);
+
+					if (current.visitCount == 0)
+					{
+						// We've expanded a new node, time for playout!
+						break;
+					}
+				}
+
+				Context contextEnd = current.context;
+
+				if (!contextEnd.trial().over())
+				{
+					// Run a playout if we don't already have a terminal game state in node
+					contextEnd = new Context(contextEnd);
+					game.playout
+					(
+						contextEnd, 
+						null, 
+						-1.0, 
+						null, 
+						0, 
+						200, 
+						ThreadLocalRandom.current()
+					);
+				}
+
+				// This computes utilities for all players at the of the playout,
+				// which will all be values in [-1.0, 1.0]
+				final double[] utilities = RankUtils.utilities(contextEnd);
+
+				// Backpropagate utilities through the tree
+				while (current != null)
+				{
+					current.visitCount += 1;
+					for (int p = 1; p <= game.players().count(); ++p)
+					{
+						current.scoreSums[p] += utilities[p];
+					}
+					current = current.parent;
+				}
+
+				rootNodesVisited++;
+				if (rootNodesVisited == numPossibleMoves)
+				{
+					//System.out.println("First round over");
+					//firstRound = true;
+					rootFullyExpanded = true;
+				}
+
+			}
+			else
+			{
+				//Exploring nodes still in List
+
 				Node currentChild = root.children.get(nodeIndex); 
-				
-				
-				while(System.currentTimeMillis() < halveTime){//checks to see if we are ready to halve from the root
+
+
+				while (System.currentTimeMillis() < halveTime)
+				{ //checks to see if we are ready to halve from the root
 					//System.out.println("running UCT on node: " + nodeIndex);
 					//System.out.println(this.halvingIterations);
 					//out.println(this.iterPerRound);
 
 					// if(firstRound && this.halvingIterations == 0){this.halvingIterations += 1;}
-					
 
-						Node current = currentChild;
-						
-						// Traverse tree
-						while (true)
+
+					Node current = currentChild;
+
+					// Traverse tree
+					while (true)
 					{
 						if (current.context.trial().over())
 						{
 							// We've reached a terminal state
 							break;
 						}
-						
+
 						current = select(current);
-						
+
 						if (current.visitCount == 0)
 						{
 							// We've expanded a new node, time for playout!
 							break;
 						}
 					}
-					
+
 					Context contextEnd = current.context;
-					
+
 					if (!contextEnd.trial().over())
 					{
 						// Run a playout if we don't already have a terminal game state in node
@@ -209,11 +213,11 @@ public class SHUCTTime extends AI
 							ThreadLocalRandom.current()
 						);
 					}
-					
+
 					// This computes utilities for all players at the of the playout,
 					// which will all be values in [-1.0, 1.0]
 					final double[] utilities = RankUtils.utilities(contextEnd);
-					
+
 					// Backpropagate utilities through the tree
 					while (current != null)
 					{
@@ -224,44 +228,53 @@ public class SHUCTTime extends AI
 						}
 						current = current.parent;
 					}
-					
+
 					// Increment iteration counts
 
-					hist.add(nodeIndex);
-					if(nodeIndex + 1 >= numPossibleMoves){
+					//hist.add(nodeIndex);
+					if (nodeIndex + 1 >= numPossibleMoves)
+					{
 						nodeIndex = 0;
 						currentChild = root.children.get(nodeIndex);
-					}else{
+					}
+					else
+					{
 						nodeIndex++;
 						currentChild = root.children.get(nodeIndex);
 					}
 
 
 				}
-			
-		//After children have been explored equally, we halve from the root.
-			//System.out.println("Halving root");
-			//System.out.println("numIterations: " + this.numIterations);
-			halveRoot(root);
-			hist.add(999);
 
-			numPossibleMoves = root.children.size();
-			//System.out.println(numPossibleMoves);
-			this.timePerRound = Double.valueOf(Math.ceil(this.timePerRound / 2)).intValue();
-			// System.out.println("Iterperround: " + this.iterPerRound);
-			if(this.timePerRound < 1){ this.timePerRound = 2;}
-			halveTime = System.currentTimeMillis() + this.timePerRound;
-			//System.out.println("iterperround after halving: " + this.iterPerRound);
+				//After children have been explored equally, we halve from the root.
+				//System.out.println("Halving root");
+				//System.out.println("numIterations: " + this.numIterations);
+				halveRoot(root);
+				//hist.add(999);
 
-			if(nodeIndex + 1 >= numPossibleMoves){
-				nodeIndex = 0;
-				currentChild = root.children.get(nodeIndex);
-			}else{
-				nodeIndex++;
-				currentChild = root.children.get(nodeIndex);
+				numPossibleMoves = root.children.size();
+				//System.out.println(numPossibleMoves);
+				this.timePerRound = Double.valueOf(Math.ceil(this.timePerRound / 2)).intValue();
+				// System.out.println("Iterperround: " + this.iterPerRound);
+				if (this.timePerRound < 1)
+				{ 
+					this.timePerRound = 2;
+				}
+				halveTime = System.currentTimeMillis() + this.timePerRound;
+				//System.out.println("iterperround after halving: " + this.iterPerRound);
+
+				if (nodeIndex + 1 >= numPossibleMoves)
+				{
+					nodeIndex = 0;
+					currentChild = root.children.get(nodeIndex);
+				}
+				else
+				{
+					nodeIndex++;
+					currentChild = root.children.get(nodeIndex);
+				}
+				//firstRound = false;
 			}
-			firstRound = false;
-		}
 		}
 
 		
@@ -274,12 +287,14 @@ public class SHUCTTime extends AI
 	/**This method takes the rootNode, sorts it's children by their exploit value, and then removes half of the worst children from the root.
 	 * @param rootNode
 	 */
-	public static void halveRoot(Node rootNode){
+	public static void halveRoot(final Node rootNode)
+	{
 		int numChildren = rootNode.children.size();
-		if(numChildren > 2){
+		if (numChildren > 2)
+		{
 			final int mover = rootNode.context.state().mover();
-			double bestValue = Double.NEGATIVE_INFINITY;
-			final double twoParentLog = 2.0 * Math.log(Math.max(1, rootNode.visitCount));
+			//double bestValue = Double.NEGATIVE_INFINITY;
+			//final double twoParentLog = 2.0 * Math.log(Math.max(1, rootNode.visitCount));
 			//Make a list sorting each child node by value and then take the best half.
 
 			// A list of lists where the first index of the inner list is the node 
@@ -316,7 +331,8 @@ public class SHUCTTime extends AI
 			lowerHalf.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(0)).reversed());//sort based on index in descending order
 			//System.out.println("Worst nodes, sorted ascending: " + lowerHalf.toString());
 			//Remove the worst nodes from the list, by sorting first, this index based removal should happen in a way that doesn't break./
-			for(int i = 0; i < lowerHalf.size();i++){
+			for (int i = 0; i < lowerHalf.size(); i++)
+			{
 				rootNode.children.remove(Double.valueOf(lowerHalf.get(i).get(0)).intValue());
 			}
 		}
