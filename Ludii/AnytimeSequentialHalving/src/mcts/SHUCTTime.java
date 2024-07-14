@@ -5,13 +5,13 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
 import game.Game;
 import main.collections.FastArrayList;
 import other.AI;
 import other.RankUtils;
 import other.context.Context;
 import other.move.Move;
-import java.lang.Math.*;
 
 /**
  * A Sequential Halving Agent utilizing UCT.
@@ -20,7 +20,7 @@ import java.lang.Math.*;
  * 
  * 
  * This class is a modified version of the example code provided by Dennis Soemers.
- * @author Dennis Soemers, Dominic Sagers
+ * @author Dominic Sagers
  */
 public class SHUCTTime extends AI
 {
@@ -481,25 +481,25 @@ public class SHUCTTime extends AI
 	private static class Node
 	{
 		/** Our parent node */
-		private final Node parent;
+		protected final Node parent;
 		
 		/** The move that led from parent to this node */
-		private final Move moveFromParent;
+		protected final Move moveFromParent;
 		
 		/** This objects contains the game state for this node (this is why we don't support stochastic games) */
-		private final Context context;
+		protected final Context context;
 		
 		/** Visit count for this node */
-		private int visitCount = 0;
+		protected int visitCount = 0;
 		
 		/** For every player, sum of utilities / scores backpropagated through this node */
-		private final double[] scoreSums;
+		protected final double[] scoreSums;
 		
 		/** Child nodes */
-		private List<Node> children = new ArrayList<Node>();
+		protected List<Node> children = new ArrayList<Node>();
 		
 		/** List of moves for which we did not yet create a child node */
-		private final FastArrayList<Move> unexpandedMoves;
+		protected final FastArrayList<Move> unexpandedMoves;
 		
 		/**
 		 * Constructor
