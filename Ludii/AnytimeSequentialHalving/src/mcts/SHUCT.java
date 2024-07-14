@@ -15,8 +15,7 @@ import other.move.Move;
 
 /**
  * A Sequential Halving Agent utilizing UCT.
- * This implementation performs a normal MCTS UCT search until a predetermined iteration limit, 
- * then halves the tree from the root node via Sequential Halving.
+ * This implementation uses Sequential Halving at the root node, and UCB1 below that.
  * 
  * Only supports deterministic, alternating-move games.
  * 
@@ -33,11 +32,12 @@ public class SHUCT extends AI
 	protected int player = -1;
 	
 	//-------------------------------------------------------------------------
-	//Necessary variables for the SH algorithm.
+
+	/** We use this because our command line arguments only include an option for seconds */
 	private final int iterationBudgetMultiplier = 1000;
+	
 	private int iterationBudget = -1;//How many iterations we are allotted during this search
 	private int iterPerRound;//Gives how many iterations should be run before halving from the root.
-	private int halvingIterations;//Tracks the number of inner iterations for halving purposes
 	private int numIterations;// Tracks the number of total iterations for the main loop
 
 	/**
@@ -71,7 +71,9 @@ public class SHUCT extends AI
 
 		this.iterPerRound = (int) Math.ceil(this.iterationBudget/2);
 		this.numIterations = 0;
-		this.halvingIterations = 0;
+		
+		// Number of iterations in our current round of Sequential Halving
+		int iterationsCurrRound = 0;
 
 		//ALGORITHM IDEA
 		/*while(numIterations < iterationBudget){
@@ -171,7 +173,7 @@ public class SHUCT extends AI
 
 				rootNodesVisited++;
 				this.numIterations += 1;
-				this.halvingIterations += 1;
+				iterationsCurrRound += 1;
 				if (rootNodesVisited == numPossibleMoves)
 				{
 					//System.out.println("Root expansion over");
@@ -182,19 +184,17 @@ public class SHUCT extends AI
 			}
 			else
 			{
-				//All root nodes are added to the Node list, so we can now continue the search with halving in mind.
-
+				// All root children are added to the Node list, 
+				// so we can now continue the search with halving in mind.
 				Node currentChild = root.children.get(nodeIndex); 
 
-
-				while (this.halvingIterations < this.iterPerRound)
+				while (iterationsCurrRound < this.iterPerRound)
 				{ //checks to see if we are ready to halve from the root
 					//System.out.println("running UCT on node: " + nodeIndex);
 					//System.out.println(this.halvingIterations);
 					//out.println(this.iterPerRound);
 
 					// if(firstRound && this.halvingIterations == 0){this.halvingIterations += 1;}
-
 
 					Node current = currentChild;
 
@@ -253,7 +253,9 @@ public class SHUCT extends AI
 
 					//hist.add(nodeIndex);
 					this.numIterations += 1;
-					this.halvingIterations += 1;
+					iterationsCurrRound += 1;
+					
+					// Cycle to next child again
 					if (nodeIndex + 1 >= numPossibleMoves)
 					{
 						nodeIndex = 0;
@@ -264,12 +266,10 @@ public class SHUCT extends AI
 						nodeIndex++;
 						currentChild = root.children.get(nodeIndex);
 					}
-
-
 				}
 
-				//After children have been explored equally, we halve from the root.
-				this.halvingIterations = 0;
+				// After children have been explored equally, we halve from the root.
+				iterationsCurrRound = 0;
 				//System.out.println("Halving root");
 				//System.out.println("numIterations: " + this.numIterations);
 				halveRoot(root);
