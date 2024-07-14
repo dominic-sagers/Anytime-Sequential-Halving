@@ -15,7 +15,9 @@ import other.move.Move;
 
 /**
  * A Sequential Halving Agent utilizing UCT.
- * This implementation performs a normal MCTS UCT search until a predetermined iteration limit, then halves the tree from the root node via Sequential Halving.
+ * This implementation performs a normal MCTS UCT search until a predetermined iteration limit, 
+ * then halves the tree from the root node via Sequential Halving.
+ * 
  * Only supports deterministic, alternating-move games.
  * 
  * 
@@ -59,16 +61,13 @@ public class SHUCT extends AI
 		final int maxDepth
 	)
 	{
-		
-		
 		// Start out by creating a new root node (no tree reuse in this example)
 		final Node root = new Node(null, null, context);
 		
-		if(this.iterationBudget == -1){
+		if (this.iterationBudget == -1)
+		{
 			this.iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
 		}
-
-
 
 		this.iterPerRound = (int) Math.ceil(this.iterationBudget/2);
 		this.numIterations = 0;
@@ -94,8 +93,6 @@ public class SHUCT extends AI
 			}
 		 */
 
-
-
 		// Our main loop through MCTS iterations
 		//ArrayList<Integer> hist = new ArrayList<>();//
 		boolean rootFullyExpanded = false;
@@ -106,100 +103,20 @@ public class SHUCT extends AI
 		// System.out.println("iterationBudget: " + this.iterationBudget + " \n numIterations: " + this.numIterations);
 		// System.out.println("Iter per round: " + this.iterPerRound);
 
-
 		while 
 		(
 			this.numIterations < (this.iterationBudget) && 					// Respect iteration limit
-				// Respect time limit
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
 		{
 
-		// Start in root node
-		if(!rootFullyExpanded){
-			//System.out.println("starting root search");
-			//System.out.println(rootNodesVisited);
-
-			Node current = root;
-			
-			// Traverse tree
-			while (true)
+			// Start in root node
+			if (!rootFullyExpanded)
 			{
-				if (current.context.trial().over())
-				{
-					// We've reached a terminal state
-					break;
-				}
-				
-				current = select(current);
-				
-				if (current.visitCount == 0)
-				{
-					// We've expanded a new node, time for playout!
-					break;
-				}
-			}
-			
-			Context contextEnd = current.context;
-			
-			if (!contextEnd.trial().over())
-			{
-				// Run a playout if we don't already have a terminal game state in node
-				contextEnd = new Context(contextEnd);
-				game.playout
-				(
-					contextEnd, 
-					null, 
-					-1.0, 
-					null, 
-					0, 
-					200, 
-					ThreadLocalRandom.current()
-				);
-			}
-			
-			// This computes utilities for all players at the of the playout,
-			// which will all be values in [-1.0, 1.0]
-			final double[] utilities = RankUtils.utilities(contextEnd);
-			
-			// Backpropagate utilities through the tree
-			while (current != null)
-			{
-				current.visitCount += 1;
-				for (int p = 1; p <= game.players().count(); ++p)
-				{
-					current.scoreSums[p] += utilities[p];
-				}
-				current = current.parent;
-			}
-			
-			rootNodesVisited++;
-			this.numIterations += 1;
-			this.halvingIterations += 1;
-			if(rootNodesVisited == numPossibleMoves){
-				//System.out.println("Root expansion over");
+				//System.out.println("starting root search");
 				//System.out.println(rootNodesVisited);
-				rootFullyExpanded = true;
-			}
 
-		}
-		else
-		{
-			//All root nodes are added to the Node list, so we can now continue the search with halving in mind.
-				
-			Node currentChild = root.children.get(nodeIndex); 
-
-
-			while (this.halvingIterations < this.iterPerRound)
-			{ //checks to see if we are ready to halve from the root
-				//System.out.println("running UCT on node: " + nodeIndex);
-				//System.out.println(this.halvingIterations);
-				//out.println(this.iterPerRound);
-
-				// if(firstRound && this.halvingIterations == 0){this.halvingIterations += 1;}
-
-
-				Node current = currentChild;
+				Node current = root;
 
 				// Traverse tree
 				while (true)
@@ -210,7 +127,7 @@ public class SHUCT extends AI
 						break;
 					}
 
-					current = select(current);
+					current = ucb1Select(current);
 
 					if (current.visitCount == 0)
 					{
@@ -227,14 +144,14 @@ public class SHUCT extends AI
 					contextEnd = new Context(contextEnd);
 					game.playout
 					(
-							contextEnd, 
-							null, 
-							-1.0, 
-							null, 
-							0, 
-							200, 
-							ThreadLocalRandom.current()
-							);
+						contextEnd, 
+						null, 
+						-1.0, 
+						null, 
+						0, 
+						200, 
+						ThreadLocalRandom.current()
+					);
 				}
 
 				// This computes utilities for all players at the of the playout,
@@ -252,52 +169,132 @@ public class SHUCT extends AI
 					current = current.parent;
 				}
 
-				// Increment iteration counts
-
-				//hist.add(nodeIndex);
+				rootNodesVisited++;
 				this.numIterations += 1;
 				this.halvingIterations += 1;
-				if (nodeIndex + 1 >= numPossibleMoves)
+				if (rootNodesVisited == numPossibleMoves)
 				{
-					nodeIndex = 0;
-					currentChild = root.children.get(nodeIndex);
+					//System.out.println("Root expansion over");
+					//System.out.println(rootNodesVisited);
+					rootFullyExpanded = true;
 				}
-				else
-				{
-					nodeIndex++;
-					currentChild = root.children.get(nodeIndex);
-				}
-
 
 			}
-			
-			//After children have been explored equally, we halve from the root.
-			this.halvingIterations = 0;
-			//System.out.println("Halving root");
-			//System.out.println("numIterations: " + this.numIterations);
-			halveRoot(root);
-			//hist.add(999);//Identifier for where halving occured in the hist
-
-
-			numPossibleMoves = root.children.size();
-			//System.out.println(numPossibleMoves);
-
-
-			this.iterPerRound = Double.valueOf(Math.ceil(this.iterPerRound / 2)).intValue();
-			// System.out.println("Iterperround: " + this.iterPerRound);
-
-			if (this.iterPerRound < 2)
-			{ 
-				this.iterPerRound = 2;
-			}//Base case, so that we are always at least searching two nodes (shouldnt matter if algorithm runs correctly)
-			//System.out.println("iterperround after halving: " + this.iterPerRound);
-
-
-			if (nodeIndex >= numPossibleMoves)
+			else
 			{
-				nodeIndex = 0;
-			}//if we are outside of list range after halving, reset to start
-		}
+				//All root nodes are added to the Node list, so we can now continue the search with halving in mind.
+
+				Node currentChild = root.children.get(nodeIndex); 
+
+
+				while (this.halvingIterations < this.iterPerRound)
+				{ //checks to see if we are ready to halve from the root
+					//System.out.println("running UCT on node: " + nodeIndex);
+					//System.out.println(this.halvingIterations);
+					//out.println(this.iterPerRound);
+
+					// if(firstRound && this.halvingIterations == 0){this.halvingIterations += 1;}
+
+
+					Node current = currentChild;
+
+					// Traverse tree
+					while (true)
+					{
+						if (current.context.trial().over())
+						{
+							// We've reached a terminal state
+							break;
+						}
+
+						current = ucb1Select(current);
+
+						if (current.visitCount == 0)
+						{
+							// We've expanded a new node, time for playout!
+							break;
+						}
+					}
+
+					Context contextEnd = current.context;
+
+					if (!contextEnd.trial().over())
+					{
+						// Run a playout if we don't already have a terminal game state in node
+						contextEnd = new Context(contextEnd);
+						game.playout
+						(
+							contextEnd, 
+							null, 
+							-1.0, 
+							null, 
+							0, 
+							200, 
+							ThreadLocalRandom.current()
+						);
+					}
+
+					// This computes utilities for all players at the of the playout,
+					// which will all be values in [-1.0, 1.0]
+					final double[] utilities = RankUtils.utilities(contextEnd);
+
+					// Backpropagate utilities through the tree
+					while (current != null)
+					{
+						current.visitCount += 1;
+						for (int p = 1; p <= game.players().count(); ++p)
+						{
+							current.scoreSums[p] += utilities[p];
+						}
+						current = current.parent;
+					}
+
+					// Increment iteration counts
+
+					//hist.add(nodeIndex);
+					this.numIterations += 1;
+					this.halvingIterations += 1;
+					if (nodeIndex + 1 >= numPossibleMoves)
+					{
+						nodeIndex = 0;
+						currentChild = root.children.get(nodeIndex);
+					}
+					else
+					{
+						nodeIndex++;
+						currentChild = root.children.get(nodeIndex);
+					}
+
+
+				}
+
+				//After children have been explored equally, we halve from the root.
+				this.halvingIterations = 0;
+				//System.out.println("Halving root");
+				//System.out.println("numIterations: " + this.numIterations);
+				halveRoot(root);
+				//hist.add(999);//Identifier for where halving occured in the hist
+
+
+				numPossibleMoves = root.children.size();
+				//System.out.println(numPossibleMoves);
+
+
+				this.iterPerRound = Double.valueOf(Math.ceil(this.iterPerRound / 2)).intValue();
+				// System.out.println("Iterperround: " + this.iterPerRound);
+
+				if (this.iterPerRound < 2)
+				{ 
+					this.iterPerRound = 2;
+				}//Base case, so that we are always at least searching two nodes (shouldnt matter if algorithm runs correctly)
+				//System.out.println("iterperround after halving: " + this.iterPerRound);
+
+
+				if (nodeIndex >= numPossibleMoves)
+				{
+					nodeIndex = 0;
+				}//if we are outside of list range after halving, reset to start
+			}
 		}
 
 		
@@ -395,7 +392,7 @@ public class SHUCT extends AI
 	 * @param current
 	 * @return Selected node (if it has 0 visits, it will be a newly-expanded node).
 	 */
-	public static Node select(final Node current)
+	public static Node ucb1Select(final Node current)
 	{
 		if (!current.unexpandedMoves.isEmpty())
 		{

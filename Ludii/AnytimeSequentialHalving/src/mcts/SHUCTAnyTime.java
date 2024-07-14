@@ -180,7 +180,7 @@ public class SHUCTAnyTime extends AI
 						break;
 					}
 					
-					current = select(current);
+					current = ucb1Select(current);
 					
 					if (current.visitCount == 0)
 					{
@@ -252,7 +252,7 @@ public class SHUCTAnyTime extends AI
 						break;
 					}
 					
-					current = select(current);
+					current = ucb1Select(current);
 					
 					if (current.visitCount == 0)
 					{
@@ -435,7 +435,7 @@ public class SHUCTAnyTime extends AI
 	 * @param current
 	 * @return Selected node (if it has 0 visits, it will be a newly-expanded node).
 	 */
-	public static Node select(final Node current)
+	public static Node ucb1Select(final Node current)
 	{
 		if (!current.unexpandedMoves.isEmpty())
 		{

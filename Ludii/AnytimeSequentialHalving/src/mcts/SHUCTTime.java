@@ -109,7 +109,7 @@ public class SHUCTTime extends AI
 						break;
 					}
 
-					current = select(current);
+					current = ucb1Select(current);
 
 					if (current.visitCount == 0)
 					{
@@ -187,7 +187,7 @@ public class SHUCTTime extends AI
 							break;
 						}
 
-						current = select(current);
+						current = ucb1Select(current);
 
 						if (current.visitCount == 0)
 						{
@@ -373,7 +373,7 @@ public class SHUCTTime extends AI
 	 * @param current
 	 * @return Selected node (if it has 0 visits, it will be a newly-expanded node).
 	 */
-	public static Node select(final Node current)
+	public static Node ucb1Select(final Node current)
 	{
 		if (!current.unexpandedMoves.isEmpty())
 		{
@@ -429,7 +429,8 @@ public class SHUCTTime extends AI
 	}
 	
 	/**
-	 * Selects best move based on the highest exploit value (rather than visit count, because SH will visit all root children equally regardless)
+	 * Selects best move based on the highest exploit value 
+	 * (rather than visit count, because SH will visit all root children equally regardless)
 	 * 
 	 * @param rootNode
 	 * @return
