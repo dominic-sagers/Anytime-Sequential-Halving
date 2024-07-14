@@ -96,7 +96,7 @@ public class SHUCT extends AI
 		 */
 
 		// Our main loop through MCTS iterations
-		//ArrayList<Integer> hist = new ArrayList<>();//
+		ArrayList<Integer> hist = new ArrayList<>();//
 		boolean rootFullyExpanded = false;
 		int numPossibleMoves = root.unexpandedMoves.size();
 		// System.err.println("possible moves: " + numPossibleMoves);
@@ -251,7 +251,7 @@ public class SHUCT extends AI
 
 					// Increment iteration counts
 
-					//hist.add(nodeIndex);
+					hist.add(nodeIndex);
 					this.numIterations += 1;
 					iterationsCurrRound += 1;
 					
@@ -270,14 +270,14 @@ public class SHUCT extends AI
 
 				// After children have been explored equally, we halve from the root.
 				iterationsCurrRound = 0;
-				//System.out.println("Halving root");
-				//System.out.println("numIterations: " + this.numIterations);
+				System.out.println("Halving root");
+				System.out.println("numIterations: " + this.numIterations);
 				halveRoot(root);
-				//hist.add(999);//Identifier for where halving occured in the hist
+				hist.add(999);//Identifier for where halving occured in the hist
 
 
 				numPossibleMoves = root.children.size();
-				//System.out.println(numPossibleMoves);
+				System.out.println("numPossibleMoves = " + numPossibleMoves);
 
 
 				this.iterPerRound = Double.valueOf(Math.ceil(this.iterPerRound / 2)).intValue();
@@ -300,7 +300,7 @@ public class SHUCT extends AI
 		
 		// Return the move we wish to play
 		
-		//displayHist(hist, this);
+		displayHist(hist, this);
 		//System.out.println(hist.toString());
 		
 		return finalMoveSelection(root);
@@ -317,15 +317,13 @@ public class SHUCT extends AI
 			//Make a list sorting each child node by value and then take the best half.
 
 			// A list of lists where the first index of the inner list is the node 
-			//index and the second index is the value of that node
+			// index and the second index is the value of that node
 			ArrayList<ArrayList<Double>> nodeValues = new ArrayList<>();
 			
 			for (int i = 0; i < numChildren; ++i) 
 			{
 				final Node child = rootNode.children.get(i);
 				final double exploit = child.scoreSums[mover] / child.visitCount;
-				// final double explore = Math.sqrt(twoParentLog / child.visitCount);
-				// final double ucb1Value = exploit + explore;
 				
 				ArrayList<Double> val = new ArrayList<>();
 
@@ -335,24 +333,24 @@ public class SHUCT extends AI
 				
 			}
 
-
-			// sort descending based on the second index of each inner list:
-			nodeValues.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(1)).reversed());
+			// sort in ascending order based on the value (second index) of each inner list:
+			nodeValues.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(1)));
 
 			//System.out.println("nodeValues after sorting descending: " + nodeValues.toString());
 
 			// make a new list which only contains the nodes we want to remove from the tree:
-			double halfSizeTemp = Math.ceil(nodeValues.size() / 2);
-			if(halfSizeTemp < 2){halfSizeTemp = 2;}
-			int halfSize = Double.valueOf(halfSizeTemp).intValue();
-			ArrayList<ArrayList<Double>> lowerHalf = new ArrayList<>(nodeValues.subList(halfSize, nodeValues.size()));
+			
+			// This is the number of nodes we're removing, so we round this down.
+			final int halfSize = (int) (nodeValues.size() / 2.0);
+			ArrayList<ArrayList<Double>> lowerHalf = new ArrayList<>(nodeValues.subList(0, halfSize));
 
-			lowerHalf.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(0)).reversed());//sort based on index in descending order
+			// Sort the worst half of nodes based on index in descending order
+			lowerHalf.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(0)).reversed());
 			//System.out.println("Worst nodes, sorted ascending: " + lowerHalf.toString());
 
-
 			// Remove the worst nodes from the list, by sorting first, this index based removal should happen in a way that doesn't break./
-			for (int i = 0; i < lowerHalf.size(); i++){
+			for (int i = 0; i < lowerHalf.size(); i++)
+			{
 				rootNode.children.remove(Double.valueOf(lowerHalf.get(i).get(0)).intValue());
 			}
 		}
