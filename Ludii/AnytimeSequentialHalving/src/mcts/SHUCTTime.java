@@ -33,7 +33,6 @@ public class SHUCTTime extends AI
 	//-------------------------------------------------------------------------
 	//Necessary variables for the SH algorithm.
 	//private int timeBudget;
-	private int rounds;// A reference for the amount of rounds 
 	private int timePerRound;
 	/**
 	 * Constructor
@@ -64,7 +63,6 @@ public class SHUCTTime extends AI
 		
 		
 		// this.timeBudget = Double.valueOf(maxSeconds).intValue();
-		this.rounds = (int) Math.ceil(Math.log(maxSeconds));
 		this.timePerRound = (int) (Math.ceil(maxSeconds*1000L)/2);
 		final long stopTime = (maxSeconds > 0.0) ? System.currentTimeMillis() + (long) (maxSeconds * 1000L) : Long.MAX_VALUE;
 		// System.out.println(maxSeconds);
