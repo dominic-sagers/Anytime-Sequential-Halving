@@ -1,13 +1,12 @@
 package main;
 
 import app.StartDesktopApp;
-import manager.ai.AIRegistry;
-import mcts.ExampleDUCT;
 import mcts.ExampleUCT;
-import mcts.SHUCTTime;
 import mcts.SHUCT;
 import mcts.SHUCTAnyTime;
-import random.RandomAI;
+import mcts.SHUCTTime;
+import utils.AIRegistry;
+import utils.RandomAI;
 
 /**
  * The main method of this launches the Ludii application with its GUI, and registers
@@ -29,9 +28,6 @@ public class LaunchLudii
 			System.err.println("WARNING! Failed to register AI because one with that name already existed!");
 		
 		if (!AIRegistry.registerAI("Example UCT", () -> {return new ExampleUCT();}, (game) -> {return new ExampleUCT().supportsGame(game);}))
-			System.err.println("WARNING! Failed to register AI because one with that name already existed!");
-		
-		if (!AIRegistry.registerAI("Example DUCT", () -> {return new ExampleDUCT();}, (game) -> {return new ExampleDUCT().supportsGame(game);}))
 			System.err.println("WARNING! Failed to register AI because one with that name already existed!");
 		
 		if (!AIRegistry.registerAI("SHUCT", () -> {return new SHUCT(100);}, (game) -> {return new SHUCT(100).supportsGame(game);}))

@@ -7,13 +7,11 @@ import java.util.List;
 import features.feature_sets.network.JITSPatterNetFeatureSet;
 import main.CommandLineArgParse.ArgOption;
 import main.CommandLineArgParse.OptionTypes;
-import manager.ai.AIRegistry;
 import mcts.SHUCT;
-import mcts.SHUCTTime;
 import mcts.SHUCTAnyTime;
+import mcts.SHUCTTime;
 import other.AI;
 import supplementary.experiments.EvalGamesSet;
-import supplementary.experiments.eval.EvalAgents;
 import utils.AIFactory;
 
 
