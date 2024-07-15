@@ -37,8 +37,6 @@ public class SHUCT extends AI
 	private final int iterationBudgetMultiplier = 1000;
 	
 	private int iterationBudget = -1;//How many iterations we are allotted during this search
-	private int iterPerRound;//Gives how many iterations should be run before halving from the root.
-	private int numIterations;// Tracks the number of total iterations for the main loop
 
 	/**
 	 * Constructor
@@ -68,9 +66,9 @@ public class SHUCT extends AI
 		{
 			this.iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
 		}
-
-		this.iterPerRound = (int) Math.ceil(this.iterationBudget/2);
-		this.numIterations = 0;
+		
+		// Num iterations we have in the entire search
+		int numIterations = 0;
 		
 		// Number of iterations in our current round of Sequential Halving
 		int iterationsCurrRound = 0;
@@ -96,10 +94,17 @@ public class SHUCT extends AI
 		 */
 
 		// Our main loop through MCTS iterations
-		ArrayList<Integer> hist = new ArrayList<>();//
+		//ArrayList<Integer> hist = new ArrayList<>();//
 		boolean rootFullyExpanded = false;
 		int numPossibleMoves = root.unexpandedMoves.size();
 		// System.err.println("possible moves: " + numPossibleMoves);
+		
+		final int numHalvings = (int) Math.floor(Math.log(numPossibleMoves) / Math.log(2.0));
+		//System.out.println("can halve this many times: " + numHalvings);
+		// Num iterations we can do per round of Sequential Halving
+		// (this needs to be spread evenly among surviving arms in each round)
+		final int iterPerRound = (this.iterationBudget / (numHalvings));
+		
 		int rootNodesVisited = 0;
 		int nodeIndex = 0;
 		// System.out.println("iterationBudget: " + this.iterationBudget + " \n numIterations: " + this.numIterations);
@@ -107,7 +112,7 @@ public class SHUCT extends AI
 
 		while 
 		(
-			this.numIterations < (this.iterationBudget) && 					// Respect iteration limit
+			numIterations < (this.iterationBudget) && 					// Respect iteration limit
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
 		{
@@ -172,7 +177,7 @@ public class SHUCT extends AI
 				}
 
 				rootNodesVisited++;
-				this.numIterations += 1;
+				numIterations += 1;
 				iterationsCurrRound += 1;
 				if (rootNodesVisited == numPossibleMoves)
 				{
@@ -188,7 +193,12 @@ public class SHUCT extends AI
 				// so we can now continue the search with halving in mind.
 				Node currentChild = root.children.get(nodeIndex); 
 
-				while (iterationsCurrRound < this.iterPerRound)
+				while 
+				(
+					iterationsCurrRound < iterPerRound && 
+					numIterations < this.iterationBudget &&
+					!wantsInterrupt
+				)
 				{ //checks to see if we are ready to halve from the root
 					//System.out.println("running UCT on node: " + nodeIndex);
 					//System.out.println(this.halvingIterations);
@@ -250,9 +260,8 @@ public class SHUCT extends AI
 					}
 
 					// Increment iteration counts
-
-					hist.add(nodeIndex);
-					this.numIterations += 1;
+					//hist.add(nodeIndex);
+					numIterations += 1;
 					iterationsCurrRound += 1;
 					
 					// Cycle to next child again
@@ -270,25 +279,13 @@ public class SHUCT extends AI
 
 				// After children have been explored equally, we halve from the root.
 				iterationsCurrRound = 0;
-				System.out.println("Halving root");
-				System.out.println("numIterations: " + this.numIterations);
+				//System.out.println("Halving root");
+				//System.out.println("numIterations: " + numIterations);
 				halveRoot(root);
-				hist.add(999);//Identifier for where halving occured in the hist
-
+				//hist.add(999);//Identifier for where halving occured in the hist
 
 				numPossibleMoves = root.children.size();
-				System.out.println("numPossibleMoves = " + numPossibleMoves);
-
-
-				this.iterPerRound = Double.valueOf(Math.ceil(this.iterPerRound / 2)).intValue();
-				// System.out.println("Iterperround: " + this.iterPerRound);
-
-				if (this.iterPerRound < 2)
-				{ 
-					this.iterPerRound = 2;
-				}//Base case, so that we are always at least searching two nodes (shouldnt matter if algorithm runs correctly)
-				//System.out.println("iterperround after halving: " + this.iterPerRound);
-
+				//System.out.println("numPossibleMoves = " + numPossibleMoves);
 
 				if (nodeIndex >= numPossibleMoves)
 				{
@@ -296,17 +293,17 @@ public class SHUCT extends AI
 				}//if we are outside of list range after halving, reset to start
 			}
 		}
-
 		
-		// Return the move we wish to play
-		
-		displayHist(hist, this);
+		//displayHist(hist, this);
 		//System.out.println(hist.toString());
 		
+		// Return the move we wish to play
 		return finalMoveSelection(root);
 	}
 
-	/**This method takes the rootNode, sorts it's children by their exploit value, and then removes half of the worst children from the root.
+	/**
+	 * This method takes the rootNode, sorts it's children by their exploit value, 
+	 * and then removes half of the worst children from the root.
 	 * @param rootNode
 	 */
 	public static void halveRoot(Node rootNode){
@@ -330,7 +327,6 @@ public class SHUCT extends AI
 				val.add((double) i);
 				val.add(exploit);
 				nodeValues.add(val);
-				
 			}
 
 			// sort in ascending order based on the value (second index) of each inner list:
