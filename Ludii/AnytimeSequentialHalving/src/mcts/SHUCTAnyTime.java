@@ -14,9 +14,7 @@ import other.context.Context;
 import other.move.Move;
 
 /**
- * An "AnyTime" Sequential Halving Agent utilizing UCT.
- * 
- * Using a UCT update step, this MCTS iteratively applies sequential halving regardless of a time or iteration constraint.
+ * An "AnyTime" Sequential Halving Agent, utilizing UCB1 below the root node.
  * 
  * Only supports deterministic, alternating-move games.
  * 
@@ -33,6 +31,8 @@ public class SHUCTAnyTime extends AI
 	protected int player = -1;
 	public boolean iterMode;
 	public int totalIterations;
+	
+	/** We use this because our command line arguments only include an option for seconds */
 	public int iterBudget = -1;
 	
 	//-------------------------------------------------------------------------
@@ -44,19 +44,25 @@ public class SHUCTAnyTime extends AI
 	{
 		this.friendlyName = "SHUCTAnyTime";
 		this.iterMode = iterMode;
-		if(iterMode){
+		if (iterMode)
+		{
 			this.iterBudget = iterBudget;
 		}
 		
 	}
 	
 	public boolean stopConditionMet(long stopTime, int iterationBudget){
-		if(this.iterMode == true){
-			if(this.totalIterations < iterationBudget){
+		if (this.iterMode)
+		{
+			if (this.totalIterations < iterationBudget)
+			{
 				return false;
 			}
-		}else{
-			if(System.currentTimeMillis() < stopTime){
+		}
+		else
+		{
+			if (System.currentTimeMillis() < stopTime)
+			{
 				return false;
 			}
 		}
@@ -108,8 +114,6 @@ public class SHUCTAnyTime extends AI
 		final int maxDepth
 	)
 	{
-		
-		
 		// Start out by creating a new root node (no tree reuse in this example)
 		final Node root = new Node(null, null, context);
 		
@@ -125,22 +129,15 @@ public class SHUCTAnyTime extends AI
 			iterationBudget = this.iterBudget;
 		}
 		
-
-		
 		// this.timeBudget = Double.valueOf(maxSeconds).intValue();
 		final long stopTime = (maxSeconds > 0.0) ? System.currentTimeMillis() + (long) (maxSeconds * 1000L) : Long.MAX_VALUE;
-
 
 		// Our main loop through MCTS iterations
 		//ArrayList<Integer> hist = new ArrayList<>();
 		boolean rootFullyExpanded = false;
-		boolean firstRound = true;
 		int numPossibleMoves = root.unexpandedMoves.size();
 		Node currentChild;
 		int armVisitCount = 0;
-		
-
-
 		
 		ArrayList<Integer> currentChildrenIdx = new ArrayList<Integer>();//A list containing the indexes of the nodes we are searching from root.children
 		for (int i = 0; i < root.children.size(); i++)
@@ -229,13 +226,9 @@ public class SHUCTAnyTime extends AI
 				if (rootNodesVisited == numPossibleMoves)
 				{
 					//System.out.println("First round over");
-					firstRound = true;
 					rootFullyExpanded = true;
 					currentChild = root.children.get(0); 
 				}
-				
-				
-
 			}
 			else 
 			{
@@ -308,9 +301,10 @@ public class SHUCTAnyTime extends AI
 				armVisitCount = 0;
 				if (currentChildrenIdx.size() <= 2)
 				{ //if we have visited all children AND we have halved the amount of times required
-					currentChildrenIdx = new ArrayList<Integer>();//reset the index list
+					currentChildrenIdx = new ArrayList<Integer>(); //reset the index list
 
-					for(int i = 0; i < root.children.size();i++){
+					for (int i = 0; i < root.children.size();i++)
+					{
 						currentChildrenIdx.add(i);
 					}
 
@@ -328,70 +322,63 @@ public class SHUCTAnyTime extends AI
 				}
 			}
 
-			if(idx >= currentChildrenIdx.size()){ idx = 0; }
-
-			firstRound = false;
+			if (idx >= currentChildrenIdx.size())
+			{ 
+				idx = 0; 
+			}
 		}
 
-	
-		// Return the move we wish to play
 		// displayHist(hist, this);
 		// System.out.println("Iterations made: " + this.totalIterations);
 		this.totalIterations = 0;
 		//System.out.println(hist.toString());
+		
+		// Return the move we wish to play
 		return finalMoveSelection(root);
 	}
 
 	/**This method takes the rootNode, sorts it's children by their exploit value, and then removes half of the worst children from the root.
 	 * @param rootNode
 	 */
-	public static ArrayList<Integer> halveRoot(Node rootNode, ArrayList<Integer> currentChildrenIndexes){
+	public static ArrayList<Integer> halveRoot(final Node rootNode, final ArrayList<Integer> currentChildrenIndexes){
 		ArrayList<Integer> newIndexes = new ArrayList<>();
 
 		int numChildren = currentChildrenIndexes.size();
 		if (numChildren > 2)
 		{
 			final int mover = rootNode.context.state().mover();
-			//double bestValue = Double.NEGATIVE_INFINITY;
-			//final double twoParentLog = 2.0 * Math.log(Math.max(1, rootNode.visitCount));
+
 			//Make a list sorting each child node by value and then take the best half.
 
 			// A list of lists where the first index of the inner list is the node 
-			//index and the second index is the value of that node
+			// index and the second index is the value of that node
 			ArrayList<ArrayList<Double>> nodeValues = new ArrayList<>();
 			
 			for (int i = 0; i < numChildren; ++i) 
 			{
 				final Node child = rootNode.children.get(currentChildrenIndexes.get(i));
 				final double exploit = child.scoreSums[mover] / child.visitCount;
-				// final double explore = Math.sqrt(twoParentLog / child.visitCount);
-				// final double ucb1Value = exploit + explore;
-				
+
 				ArrayList<Double> val = new ArrayList<>();
 
 				val.add((double) currentChildrenIndexes.get(i));
 				val.add(exploit);
 				nodeValues.add(val);
-				
 			}
 
-
-			//sort descending based on the second index of each inner list:
+			// sort in descending order based on the value (second index) of each inner list:
 			nodeValues.sort(Comparator.comparingDouble((ArrayList<Double> list) -> list.get(1)).reversed());
 
 			// System.out.println("nodeValues after sorting descending: " + nodeValues.toString());
 
-			//make a new list which only contains the nodes we want to keep from the tree:
-			double halfSizeTemp = Math.ceil(nodeValues.size() / 2);
-			if (halfSizeTemp < 2)
-			{
-				halfSizeTemp = 2;
-			}
-			int halfSize = Double.valueOf(halfSizeTemp).intValue();
-			ArrayList<ArrayList<Double>> upperHalf = new ArrayList<>(nodeValues.subList(0, halfSize));
-			//System.out.println("Worst nodes, sorted ascending: " + lowerHalf.toString());
+			// make a new list which only contains the nodes we want to keep in the tree:
 
-			for (int i = 0; i < upperHalf.size();i++)
+			// This is the number of nodes we're keeping, so we round this up.
+			final int halfSize = (int) Math.ceil(nodeValues.size() / 2.0);
+
+			ArrayList<ArrayList<Double>> upperHalf = new ArrayList<>(nodeValues.subList(0, halfSize));
+
+			for (int i = 0; i < upperHalf.size(); i++)
 			{
 				newIndexes.add(Double.valueOf(upperHalf.get(i).get(0)).intValue());
 			}
@@ -491,7 +478,7 @@ public class SHUCTAnyTime extends AI
 	}
 	
 	/**
-	 * Selects best move based on the highest exploit value (rather than visit count, because SH will visit all root children equally regardless)
+	 * Selects best move based on the highest exploit value
 	 * 
 	 * @param rootNode
 	 * @return
