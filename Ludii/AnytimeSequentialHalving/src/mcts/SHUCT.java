@@ -116,7 +116,6 @@ public class SHUCT extends AI
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
 		{
-
 			// Start in root node
 			if (!rootFullyExpanded)
 			{
@@ -450,7 +449,7 @@ public class SHUCT extends AI
 	public static Move finalMoveSelection(final Node rootNode)
 	{
 		Node bestChild = null;
-        double bestExploit = Integer.MIN_VALUE;
+        double bestExploit = Double.NEGATIVE_INFINITY;
         int numBestFound = 0;
         
         final int numChildren = rootNode.children.size();

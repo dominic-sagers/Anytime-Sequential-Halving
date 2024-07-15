@@ -51,7 +51,7 @@ public class SHUCTAnyTime extends AI
 		
 	}
 	
-	public boolean stopConditionMet(long stopTime, int iterationBudget){
+	public boolean stopConditionMet(final long stopTime, final int iterationBudget){
 		if (this.iterMode)
 		{
 			if (this.totalIterations < iterationBudget)
@@ -122,7 +122,14 @@ public class SHUCTAnyTime extends AI
 		int iterationBudget;
 		if (this.iterBudget == -1)
 		{
-			iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
+			if (maxIterations > 0)
+			{
+				iterationBudget = maxIterations;
+			}
+			else
+			{
+				iterationBudget = Double.valueOf(maxSeconds).intValue() * iterationBudgetMultiplier;
+			}
 		}
 		else
 		{
@@ -139,7 +146,8 @@ public class SHUCTAnyTime extends AI
 		Node currentChild;
 		int armVisitCount = 0;
 		
-		ArrayList<Integer> currentChildrenIdx = new ArrayList<Integer>();//A list containing the indexes of the nodes we are searching from root.children
+		// A list containing the indices of the nodes we are searching from root.children
+		ArrayList<Integer> currentChildrenIdx = new ArrayList<Integer>();
 		for (int i = 0; i < root.children.size(); i++)
 		{
 			currentChildrenIdx.add(i);
@@ -159,7 +167,6 @@ public class SHUCTAnyTime extends AI
 			!wantsInterrupt								// Respect GUI user clicking the pause button
 		)
 		{
-
 			// Start in root node
 			if (!rootFullyExpanded)
 			{
@@ -309,10 +316,9 @@ public class SHUCTAnyTime extends AI
 					}
 
 					idx = 0;
-
 				}
 				else
-				{ //We havent finished halving, so we halve based on the current exploit values
+				{ //We haven't finished halving, so we halve based on the current exploit values
 					//System.out.println("before: " + currentChildrenIdx.toString());
 					currentChildrenIdx = halveRoot(root, currentChildrenIdx);
 					//hist.add(999);
@@ -486,7 +492,7 @@ public class SHUCTAnyTime extends AI
 	public static Move finalMoveSelection(final Node rootNode)
 	{
 		Node bestChild = null;
-        double bestExploit = Integer.MIN_VALUE;
+        double bestExploit = Double.NEGATIVE_INFINITY;
         int numBestFound = 0;
         
         final int numChildren = rootNode.children.size();
