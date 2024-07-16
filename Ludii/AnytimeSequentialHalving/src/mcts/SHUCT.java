@@ -99,6 +99,12 @@ public class SHUCT extends AI
 		int numPossibleMoves = root.unexpandedMoves.size();
 		// System.err.println("possible moves: " + numPossibleMoves);
 		
+		if (numPossibleMoves < 2)
+		{
+			// No need for any search, return immediately to avoid division by 0 crash
+			return root.unexpandedMoves.get(0);
+		}
+		
 		final int numHalvings = (int) Math.floor(Math.log(numPossibleMoves) / Math.log(2.0));
 		//System.out.println("can halve this many times: " + numHalvings);
 		// Num iterations we can do per round of Sequential Halving
