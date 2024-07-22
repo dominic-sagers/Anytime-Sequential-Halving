@@ -20,7 +20,10 @@ def process_raw_results(csv_path):
     if match:
         agent1 = match.group(1)
         agent2 = match.group(2)
-    
+        
+    agents = sorted([agent1, agent2])
+    agent1, agent2 = agents
+        
     agent1_scores = []
     agent2_scores = []
     
@@ -34,7 +37,6 @@ def process_raw_results(csv_path):
             agent2_scores.append(score2)
         else:
             score1, score2 = convert_utilities(utilities)
-            
             agent1_scores.append(score2)
             agent2_scores.append(score1)
     
@@ -65,10 +67,10 @@ def make_results_dataframe_csv(csv_paths, game_name, time_or_iterations):
             'Iterations/Time': value,
             'Agent1': agent1,
             'Agent2': agent2,
-            'Agent1_Mean': mean1,
-            'Agent2_Mean': mean2,
-            'Agent1_Confidence': conf1,
-            'Agent2_Confidence': conf2,
+            f'{agent1}_Mean': mean1,
+            f'{agent2}_Mean': mean2,
+            f'{agent1}_Confidence': conf1,
+            f'{agent2}_Confidence': conf2,
         }
         results.append(result)
     
@@ -123,46 +125,34 @@ def make_plot(csv_path, agent, file_name):
     plt.savefig(file_name)
     plt.show()
 
-def make_doubleplot_plot(csv_path1, csv_path2, agent_num1, agent1_name, agent_num2, agent2_name, opponent, game):
+def make_doubleplot_plot(csv_path1, csv_path2, df1_agent_to_plot, df2_agent_to_plot, opponent, game):
     df1 = pd.read_csv(csv_path1)
     df2 = pd.read_csv(csv_path2)
     # Convert means and confidence intervals to percentages
-    df1['Agent1_Mean'] *= 100
-    df1['Agent1_Confidence'] *= 100
-    df1['Agent2_Mean'] *= 100
-    df1['Agent2_Confidence'] *= 100
+    df1[f'{df1_agent_to_plot}_Mean'] *= 100
+    df1[f'{df1_agent_to_plot}_Confidence'] *= 100
+    df1[f'{opponent}_Mean'] *= 100
+    df1[f'{opponent}_Confidence'] *= 100
 
     # Convert means and confidence intervals to percentages
-    df2['Agent1_Mean'] *= 100
-    df2['Agent1_Confidence'] *= 100
-    df2['Agent2_Mean'] *= 100
-    df2['Agent2_Confidence'] *= 100
+    df2[f'{opponent}_Mean'] *= 100
+    df2[f'{opponent}_Confidence'] *= 100
+    df2[f'{df2_agent_to_plot}_Mean'] *= 100
+    df2[f'{df2_agent_to_plot}_Confidence'] *= 100
     # Plotting
     plt.figure(figsize=(10, 6))
 
-    #If agentnum is 1 or if agent num is 2, plot differently
-    if agent_num1 == 1:
-        # Plot Agent 1's mean with shaded region for confidence interval
-        plt.plot(df1['Iterations/Time'], df1['Agent1_Mean'], label=agent1_name, marker='o')
-        plt.fill_between(df1['Iterations/Time'], df1['Agent1_Mean'] - df1['Agent1_Confidence'], df1['Agent1_Mean'] + df1['Agent1_Confidence'], alpha=0.3)
-    elif agent_num1 == 2:
-        # # Plot Agent 2's mean with shaded region for confidence interval
-        plt.plot(df1['Iterations/Time'], df1['Agent2_Mean'], label=agent1_name, marker='o')
-        plt.fill_between(df1['Iterations/Time'], df1['Agent2_Mean'] - df1['Agent2_Confidence'], df1['Agent2_Mean'] + df1['Agent2_Confidence'], alpha=0.3)
+    plt.plot(df1['Iterations/Time'], df1[f'{df1_agent_to_plot}_Mean'], label=df1_agent_to_plot, marker='o')
+    plt.fill_between(df1['Iterations/Time'], df1[f'{df1_agent_to_plot}_Mean'] - df1[f'{df1_agent_to_plot}_Confidence'], df1[f'{df1_agent_to_plot}_Mean'] + df1[f'{df1_agent_to_plot}_Confidence'], alpha=0.3)
 
-    if agent_num2 == 1:
-        # Plot Agent 1's mean with shaded region for confidence interval
-        plt.plot(df2['Iterations/Time'], df2['Agent1_Mean'], label=agent2_name, marker='o')
-        plt.fill_between(df2['Iterations/Time'], df2['Agent1_Mean'] - df2['Agent1_Confidence'], df2['Agent1_Mean'] + df2['Agent1_Confidence'], alpha=0.3)
-    elif agent_num2 == 2:
-        # # Plot Agent 2's mean with shaded region for confidence interval
-        plt.plot(df2['Iterations/Time'], df2['Agent2_Mean'], label=agent2_name, marker='o')
-        plt.fill_between(df2['Iterations/Time'], df2['Agent2_Mean'] - df2['Agent2_Confidence'], df2['Agent2_Mean'] + df2['Agent2_Confidence'], alpha=0.3)
+    plt.plot(df2['Iterations/Time'], df2[f'{df2_agent_to_plot}_Mean'], label=df2_agent_to_plot, marker='o')
+    plt.fill_between(df2['Iterations/Time'], df2[f'{df2_agent_to_plot}_Mean'] - df2[f'{df2_agent_to_plot}_Confidence'], df2[f'{df2_agent_to_plot}_Mean'] + df2[f'{df2_agent_to_plot}_Confidence'], alpha=0.3)
 
     # Set labels and title
     plt.xlabel('Iterations')
     plt.ylabel('Win Rate (%)')
 
+    plt.title(f'{game} - vs. {opponent}')
     plt.legend()
 
     # Set y-axis limits to 0-100%
@@ -172,8 +162,7 @@ def make_doubleplot_plot(csv_path1, csv_path2, agent_num1, agent1_name, agent_nu
     plt.yticks(range(0, 101, 5))  # Tick marks every 5%
 
     # Show plot
-    plt.savefig(f"{agent1_name} and {agent2_name} vs {opponent} - {game}.png")
-    plt.show()
+    plt.savefig(f"{df1_agent_to_plot} and {df2_agent_to_plot} vs {opponent} - {game}.png")
 
 
 if __name__ == "__main__":
@@ -219,7 +208,7 @@ if __name__ == "__main__":
     #         file_name = f"Anytime SH vs HMCTS (Opponent-Plot) - {game}.png"
     #         make_plot(csv_path, agent, file_name)
     
-    games = {"Amazons", "Breakthrough", "Clobber", "Pentalath"}
+    games = ["Amazons", "Breakthrough", "Clobber", "Pentalath"]
     budgets = [1000, 5000, 10000, 20000, 30000, 40000, 50000]
     
     for game in games:
@@ -233,16 +222,26 @@ if __name__ == "__main__":
         make_results_dataframe_csv(paths, game, budgets)
     
     for game in games:
-        csv_path1 =  os.path.join(os.getcwd(), f'{game}_SHUCTAnyTime_SHUCT_results_dataframe.csv')
-        agent1_name = "Anytime SH"
-        agent1_num = 1
+        csv_path1 =  os.path.join(os.getcwd(), f'{game}_SHUCT_SHUCTAnyTime_results_dataframe.csv')
+        agent1_name = "SHUCTAnyTime"
                 
         csv_path2 = os.path.join(os.getcwd(), f'{game}_SHUCT_UCT_results_dataframe.csv')
         agent2_name = "UCT"
-        agent2_num = 2
 
-        opp = "H-MCTS"
-        make_doubleplot_plot(csv_path1, csv_path2, agent1_num, agent1_name,agent2_num, agent2_name, opp, game)
+        opp = "SHUCT"
+        make_doubleplot_plot(csv_path1, csv_path2, agent1_name, agent2_name, opp, game)
+        
+    for game in games:
+        csv_path1 =  os.path.join(os.getcwd(), f'{game}_SHUCTAnyTime_UCT_results_dataframe.csv')
+        agent1_name = "SHUCTAnyTime"
+                
+        csv_path2 = os.path.join(os.getcwd(), f'{game}_SHUCT_UCT_results_dataframe.csv')
+        agent2_name = "SHUCT"
+
+        opp = "UCT"
+        make_doubleplot_plot(csv_path1, csv_path2, agent1_name, agent2_name, opp, game)
+        
+    plt.show()
 
     
     
