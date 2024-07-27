@@ -7,6 +7,7 @@ import java.util.List;
 import features.feature_sets.network.JITSPatterNetFeatureSet;
 import main.CommandLineArgParse.ArgOption;
 import main.CommandLineArgParse.OptionTypes;
+import mcts.ExampleUCT;
 import mcts.SHUCT;
 import mcts.SHUCTAnyTime;
 import mcts.SHUCTTime;
@@ -257,14 +258,9 @@ public class AgentExperimentRunner {
 		// parse the args
 		if (!argParse.parseArguments(args))
 			return;
-		
-		
     }
 
-
     public static void setArgs(AgentExperimentRunner eval, CommandLineArgParse argParse){
-
-
         eval.gameName = argParse.getValueString("--game");
         eval.gameOptions = (List<String>) argParse.getValue("--game-options"); 
         eval.ruleset = argParse.getValueString("--ruleset");
@@ -295,7 +291,6 @@ public class AgentExperimentRunner {
         eval.suppressDivisorWarning = argParse.getValueBool("--suppress-divisor-warning");
     }
 
-
     public void startExperiment()
 	{
 		final List<AI> ais = new ArrayList<AI>(agentStrings.size());
@@ -310,6 +305,9 @@ public class AgentExperimentRunner {
             } else if (agent.equalsIgnoreCase("shuctanytime")) {
                 SHUCTAnyTime shanytime = new SHUCTAnyTime(this.anytimeMode, this.anytimeBudget);
                 ais.add(shanytime);
+            } else if (agent.equalsIgnoreCase("uct")) {
+                ExampleUCT exampleUCT = new ExampleUCT();
+                ais.add(exampleUCT);
             } else {
                 ais.add(AIFactory.createAI(agent));
             }
