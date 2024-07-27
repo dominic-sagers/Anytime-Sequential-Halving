@@ -1,3 +1,3 @@
 agents,scores
-"('UCT', 'SHUCTAnyTime')","(-0.44, 0.44)"
-"('SHUCTAnyTime', 'UCT')","(0.52, -0.52)"
+"('UCT', 'SHUCTAnyTime')","(-0.04, 0.04)"
+"('SHUCTAnyTime', 'UCT')","(-0.14666666666666667, 0.14666666666666667)"
