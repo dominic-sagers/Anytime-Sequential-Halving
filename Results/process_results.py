@@ -225,20 +225,20 @@ if __name__ == "__main__":
         csv_path1 =  os.path.join(os.getcwd(), f'{game}_SHUCT_SHUCTAnyTime_results_dataframe.csv')
         agent1_name = "SHUCTAnyTime"
                 
-        csv_path2 = os.path.join(os.getcwd(), f'{game}_SHUCT_UCT_results_dataframe.csv')
-        agent2_name = "UCT"
+        csv_path2 = os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCT_results_dataframe.csv')
+        agent2_name = "Example UCT"
 
         opp = "SHUCT"
         make_doubleplot_plot(csv_path1, csv_path2, agent1_name, agent2_name, opp, game)
         
     for game in games:
-        csv_path1 =  os.path.join(os.getcwd(), f'{game}_SHUCTAnyTime_UCT_results_dataframe.csv')
+        csv_path1 =  os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCTAnyTime_results_dataframe.csv')
         agent1_name = "SHUCTAnyTime"
                 
-        csv_path2 = os.path.join(os.getcwd(), f'{game}_SHUCT_UCT_results_dataframe.csv')
+        csv_path2 = os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCT_results_dataframe.csv')
         agent2_name = "SHUCT"
 
-        opp = "UCT"
+        opp = "Example UCT"
         make_doubleplot_plot(csv_path1, csv_path2, agent1_name, agent2_name, opp, game)
         
     plt.show()
