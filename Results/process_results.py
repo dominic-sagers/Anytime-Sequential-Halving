@@ -46,10 +46,27 @@ def process_raw_results(csv_path):
     std1 = statistics.stdev(agent1_scores)
     std2 = statistics.stdev(agent2_scores)
     
-    conf1 = 1.96*(std1/math.sqrt(n))
-    conf2 = 1.96*(std2/math.sqrt(n))
+    # Below was the regular, non-Agresti-Coull confidence interval
+    #conf1 = 1.96*(std1/math.sqrt(n))
+    #conf2 = 1.96*(std2/math.sqrt(n))
     
-    return mean1, mean2, std1, std2, conf1, conf2, agent1, agent2
+    # Compute 95% Agresti-Coull confidence interval
+    num_trials = 150
+    z = 1.96
+    n_tilde = num_trials + z*z
+    
+    num_successes = (mean1 * num_trials, mean2 * num_trials)
+    
+    player1_p_tilde = (1.0 / n_tilde) * (num_successes[0] + ((z*z) / 2.0))
+    player2_p_tilde = (1.0 / n_tilde) * (num_successes[1] + ((z*z) / 2.0))
+    
+    # conf1 and conf2 are distances from mean/centre estimate (in either direction) for conf intervals,
+    # for players 1 and 2, respectively
+    conf1 = z * math.sqrt((player1_p_tilde / n_tilde) * (1 - player1_p_tilde))
+    conf2 = z * math.sqrt((player2_p_tilde / n_tilde) * (1 - player2_p_tilde))
+    
+    # Note: also not necessarily returning exactly means as means, but an adjusted estimate
+    return player1_p_tilde, player2_p_tilde, std1, std2, conf1, conf2, agent1, agent2
 
 
 def make_results_dataframe_csv(csv_paths, game_name, time_or_iterations):
@@ -208,7 +225,8 @@ if __name__ == "__main__":
     #         file_name = f"Anytime SH vs HMCTS (Opponent-Plot) - {game}.png"
     #         make_plot(csv_path, agent, file_name)
     
-    games = ["Amazons", "Breakthrough", "Clobber", "Pentalath"]
+    games = ["Amazons", "AtariGo", "Breakthrough", "Clobber", "Gomoku",
+             "Hex", "Pentalath", "Reversi", "Tablut", "Yavalath"]
     budgets = [1000, 5000, 10000, 20000, 30000, 40000, 50000]
     
     for game in games:
