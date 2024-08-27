@@ -261,7 +261,8 @@ if __name__ == "__main__":
         
     # Print the big table
     nice_game_names = {game: game for game in games}
-    nice_game_names["AtariGo"] = "Atari Go"
+    nice_game_names["AtariGo"] = r"Atari Go (9$\times$9)"
+    nice_game_names["Clobber"] = r"Clobber (7$\times$7)"
     
     print(r"\begin{table}")
     print(r"\setlength{\tabcolsep}{3pt}")
