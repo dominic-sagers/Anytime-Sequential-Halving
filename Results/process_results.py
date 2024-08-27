@@ -259,6 +259,77 @@ if __name__ == "__main__":
         opp = "Example UCT"
         make_doubleplot_plot(csv_path1, csv_path2, agent1_name, agent2_name, opp, game)
         
+    # Print the big table
+    nice_game_names = {game: game for game in games}
+    nice_game_names["AtariGo"] = "Atari Go"
+    
+    print(r"\begin{table}")
+    print(r"\setlength{\tabcolsep}{3pt}")
+    print(r"\caption{.}")
+    print(r"\centering")
+    print(r"\resizebox{\textwidth}{!}{%")
+    print(r"\begin{tabular}{@{}lrrrrrrr@{}}")
+    print(r"\toprule")
+    print(r"\textbf{MCTS iterations per move:} & 1000 & 5000 & 10,000 & 20,000 & 30,000 & 40,000 & 50,000 \\")
+    print(r"\midrule")
+    print(r"& \multicolumn{7}{c}{Win percentages \textbf{against UCT} (95\% Agresti-Coull confidence intervals)} \\")
+    print(r"\cmidrule(lr){2-8}")
+    
+    # First do H-MCTS and Anytime SH versus UCT
+    for game in games:
+        print(r"\textbf{" + nice_game_names[game] + r"} & & & & & & & \\")
+        
+        csv_path_uct_shuct = os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCT_results_dataframe.csv')
+        csv_path_uct_anytime =  os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCTAnyTime_results_dataframe.csv')
+        
+        df_uct_shuct = pd.read_csv(csv_path_uct_shuct)
+        df_uct_anytime = pd.read_csv(csv_path_uct_anytime)
+        # Convert means and confidence intervals to percentages
+        df_uct_shuct[f'SHUCT_Mean'] *= 100
+        df_uct_shuct[f'SHUCT_Confidence'] *= 100
+        df_uct_anytime[f'SHUCTAnyTime_Mean'] *= 100
+        df_uct_anytime[f'SHUCTAnyTime_Confidence'] *= 100
+        
+        mean_strings = [f"${mean:.2f}" for mean in df_uct_shuct[f'SHUCT_Mean']]
+        conf_strings = [f"{conf:.2f}$" for conf in df_uct_shuct[f'SHUCT_Confidence']]
+        print(r"\hspace{3mm}H-MCTS & " + " & ".join([mean_strings[i] + r" \pm " + conf_strings[i] for i in range(len(mean_strings))]) + r" \\")
+        
+        mean_strings = [f"${mean:.2f}" for mean in df_uct_anytime[f'SHUCTAnyTime_Mean']]
+        conf_strings = [f"{conf:.2f}$" for conf in df_uct_anytime[f'SHUCTAnyTime_Confidence']]
+        print(r"\hspace{3mm}Anytime SH & " + " & ".join([mean_strings[i] + r" \pm " + conf_strings[i] for i in range(len(mean_strings))]) + r" \\")
+    
+    print(r"\midrule")
+    print(r"& \multicolumn{7}{c}{Win percentages \textbf{against H-MCTS} (95\% Agresti-Coull confidence intervals)} \\")
+    print(r"\cmidrule(lr){2-8}")
+    
+    # Now do UCT and Anytime SH versus H-MCTS
+    for game in games:
+        print(r"\textbf{" + nice_game_names[game] + r"} & & & & & & & \\")
+        
+        csv_path_uct_shuct = os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCT_results_dataframe.csv')
+        csv_path_anytime_shuct =  os.path.join(os.getcwd(), f'{game}_SHUCT_SHUCTAnyTime_results_dataframe.csv')
+        
+        df_uct_shuct = pd.read_csv(csv_path_uct_shuct)
+        df_anytime_shuct = pd.read_csv(csv_path_anytime_shuct)
+        # Convert means and confidence intervals to percentages
+        df_uct_shuct[f'Example UCT_Mean'] *= 100
+        df_uct_shuct[f'Example UCT_Confidence'] *= 100
+        df_anytime_shuct[f'SHUCTAnyTime_Mean'] *= 100
+        df_anytime_shuct[f'SHUCTAnyTime_Confidence'] *= 100
+        
+        mean_strings = [f"${mean:.2f}" for mean in df_uct_shuct[f'Example UCT_Mean']]
+        conf_strings = [f"{conf:.2f}$" for conf in df_uct_shuct[f'Example UCT_Confidence']]
+        print(r"\hspace{3mm}UCT & " + " & ".join([mean_strings[i] + r" \pm " + conf_strings[i] for i in range(len(mean_strings))]) + r" \\")
+        
+        mean_strings = [f"${mean:.2f}" for mean in df_anytime_shuct[f'SHUCTAnyTime_Mean']]
+        conf_strings = [f"{conf:.2f}$" for conf in df_anytime_shuct[f'SHUCTAnyTime_Confidence']]
+        print(r"\hspace{3mm}Anytime SH & " + " & ".join([mean_strings[i] + r" \pm " + conf_strings[i] for i in range(len(mean_strings))]) + r" \\")
+    
+    print(r"\bottomrule")
+    print(r"\end{tabular}}")
+    print(r"\label{Table:GameResults}")
+    print(r"\end{table}")
+        
     plt.show()
 
     
