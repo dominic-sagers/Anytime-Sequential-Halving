@@ -1,3 +1,0 @@
-agents,scores
-"('UCT', 'SHUCT')","(-0.96, 0.96)"
-"('SHUCT', 'UCT')","(1.0, -1.0)"

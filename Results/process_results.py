@@ -46,10 +46,27 @@ def process_raw_results(csv_path):
     std1 = statistics.stdev(agent1_scores)
     std2 = statistics.stdev(agent2_scores)
     
-    conf1 = 1.96*(std1/math.sqrt(n))
-    conf2 = 1.96*(std2/math.sqrt(n))
+    # Below was the regular, non-Agresti-Coull confidence interval
+    #conf1 = 1.96*(std1/math.sqrt(n))
+    #conf2 = 1.96*(std2/math.sqrt(n))
     
-    return mean1, mean2, std1, std2, conf1, conf2, agent1, agent2
+    # Compute 95% Agresti-Coull confidence interval
+    num_trials = 150
+    z = 1.96
+    n_tilde = num_trials + z*z
+    
+    num_successes = (mean1 * num_trials, mean2 * num_trials)
+    
+    player1_p_tilde = (1.0 / n_tilde) * (num_successes[0] + ((z*z) / 2.0))
+    player2_p_tilde = (1.0 / n_tilde) * (num_successes[1] + ((z*z) / 2.0))
+    
+    # conf1 and conf2 are distances from mean/centre estimate (in either direction) for conf intervals,
+    # for players 1 and 2, respectively
+    conf1 = z * math.sqrt((player1_p_tilde / n_tilde) * (1 - player1_p_tilde))
+    conf2 = z * math.sqrt((player2_p_tilde / n_tilde) * (1 - player2_p_tilde))
+    
+    # Note: also not necessarily returning exactly means as means, but an adjusted estimate
+    return player1_p_tilde, player2_p_tilde, std1, std2, conf1, conf2, agent1, agent2
 
 
 def make_results_dataframe_csv(csv_paths, game_name, time_or_iterations):
@@ -208,7 +225,8 @@ if __name__ == "__main__":
     #         file_name = f"Anytime SH vs HMCTS (Opponent-Plot) - {game}.png"
     #         make_plot(csv_path, agent, file_name)
     
-    games = ["Amazons", "Breakthrough", "Clobber", "Pentalath"]
+    games = ["Amazons", "AtariGo", "Breakthrough", "Clobber", "Gomoku",
+             "Hex", "Pentalath", "Reversi", "Tablut", "Yavalath"]
     budgets = [1000, 5000, 10000, 20000, 30000, 40000, 50000]
     
     for game in games:
@@ -240,6 +258,78 @@ if __name__ == "__main__":
 
         opp = "Example UCT"
         make_doubleplot_plot(csv_path1, csv_path2, agent1_name, agent2_name, opp, game)
+        
+    # Print the big table
+    nice_game_names = {game: game for game in games}
+    nice_game_names["AtariGo"] = r"Atari Go (9$\times$9)"
+    nice_game_names["Clobber"] = r"Clobber (7$\times$7)"
+    
+    print(r"\begin{table}")
+    print(r"\setlength{\tabcolsep}{3pt}")
+    print(r"\caption{.}")
+    print(r"\centering")
+    print(r"\resizebox{\textwidth}{!}{%")
+    print(r"\begin{tabular}{@{}lrrrrrrr@{}}")
+    print(r"\toprule")
+    print(r"\textbf{MCTS iterations per move:} & 1000 & 5000 & 10,000 & 20,000 & 30,000 & 40,000 & 50,000 \\")
+    print(r"\midrule")
+    print(r"& \multicolumn{7}{c}{Win percentages \textbf{against UCT} (95\% Agresti-Coull confidence intervals)} \\")
+    print(r"\cmidrule(lr){2-8}")
+    
+    # First do H-MCTS and Anytime SH versus UCT
+    for game in games:
+        print(r"\textbf{" + nice_game_names[game] + r"} & & & & & & & \\")
+        
+        csv_path_uct_shuct = os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCT_results_dataframe.csv')
+        csv_path_uct_anytime =  os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCTAnyTime_results_dataframe.csv')
+        
+        df_uct_shuct = pd.read_csv(csv_path_uct_shuct)
+        df_uct_anytime = pd.read_csv(csv_path_uct_anytime)
+        # Convert means and confidence intervals to percentages
+        df_uct_shuct[f'SHUCT_Mean'] *= 100
+        df_uct_shuct[f'SHUCT_Confidence'] *= 100
+        df_uct_anytime[f'SHUCTAnyTime_Mean'] *= 100
+        df_uct_anytime[f'SHUCTAnyTime_Confidence'] *= 100
+        
+        mean_strings = [f"${mean:.2f}" for mean in df_uct_shuct[f'SHUCT_Mean']]
+        conf_strings = [f"{conf:.2f}$" for conf in df_uct_shuct[f'SHUCT_Confidence']]
+        print(r"\hspace{3mm}H-MCTS & " + " & ".join([mean_strings[i] + r" \pm " + conf_strings[i] for i in range(len(mean_strings))]) + r" \\")
+        
+        mean_strings = [f"${mean:.2f}" for mean in df_uct_anytime[f'SHUCTAnyTime_Mean']]
+        conf_strings = [f"{conf:.2f}$" for conf in df_uct_anytime[f'SHUCTAnyTime_Confidence']]
+        print(r"\hspace{3mm}Anytime SH & " + " & ".join([mean_strings[i] + r" \pm " + conf_strings[i] for i in range(len(mean_strings))]) + r" \\")
+    
+    print(r"\midrule")
+    print(r"& \multicolumn{7}{c}{Win percentages \textbf{against H-MCTS} (95\% Agresti-Coull confidence intervals)} \\")
+    print(r"\cmidrule(lr){2-8}")
+    
+    # Now do UCT and Anytime SH versus H-MCTS
+    for game in games:
+        print(r"\textbf{" + nice_game_names[game] + r"} & & & & & & & \\")
+        
+        csv_path_uct_shuct = os.path.join(os.getcwd(), f'{game}_Example UCT_SHUCT_results_dataframe.csv')
+        csv_path_anytime_shuct =  os.path.join(os.getcwd(), f'{game}_SHUCT_SHUCTAnyTime_results_dataframe.csv')
+        
+        df_uct_shuct = pd.read_csv(csv_path_uct_shuct)
+        df_anytime_shuct = pd.read_csv(csv_path_anytime_shuct)
+        # Convert means and confidence intervals to percentages
+        df_uct_shuct[f'Example UCT_Mean'] *= 100
+        df_uct_shuct[f'Example UCT_Confidence'] *= 100
+        df_anytime_shuct[f'SHUCTAnyTime_Mean'] *= 100
+        df_anytime_shuct[f'SHUCTAnyTime_Confidence'] *= 100
+        
+        mean_strings = [f"${mean:.2f}" for mean in df_uct_shuct[f'Example UCT_Mean']]
+        conf_strings = [f"{conf:.2f}$" for conf in df_uct_shuct[f'Example UCT_Confidence']]
+        print(r"\hspace{3mm}UCT & " + " & ".join([mean_strings[i] + r" \pm " + conf_strings[i] for i in range(len(mean_strings))]) + r" \\")
+        
+        mean_strings = [f"${mean:.2f}" for mean in df_anytime_shuct[f'SHUCTAnyTime_Mean']]
+        conf_strings = [f"{conf:.2f}$" for conf in df_anytime_shuct[f'SHUCTAnyTime_Confidence']]
+        print(r"\hspace{3mm}Anytime SH & " + " & ".join([mean_strings[i] + r" \pm " + conf_strings[i] for i in range(len(mean_strings))]) + r" \\")
+    
+    print(r"\bottomrule")
+    print(r"\end{tabular}}")
+    print(r"\label{Table:GameResults}")
+    print(r"\end{table}")
         
     plt.show()
 

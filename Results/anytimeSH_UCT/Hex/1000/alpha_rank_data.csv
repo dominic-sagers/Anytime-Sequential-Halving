@@ -1,0 +1,3 @@
+agents,scores
+"('Example UCT', 'SHUCTAnyTime')","(0.44, -0.44)"
+"('SHUCTAnyTime', 'Example UCT')","(-0.28, 0.28)"
